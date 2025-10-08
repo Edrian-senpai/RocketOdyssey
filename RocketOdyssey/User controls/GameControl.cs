@@ -30,7 +30,7 @@ namespace RocketOdyssey
         private Image landGif;
 
         // Movement settings
-        private int moveStep = 0;             // Rocket movement speed
+        private int moveStep = 1;             // Rocket movement speed
         private readonly int minX = 0;
         private readonly int minY = 140;
         private readonly int maxX = 650;
@@ -455,6 +455,11 @@ namespace RocketOdyssey
 
             // Save score
             DatabaseHelper.UpdateUpgrade(currentUser, "Score", score);
+        }
+
+        private void GameControl_Enter(object sender, EventArgs e)
+        {
+            this.Focus();
         }
     }
 }

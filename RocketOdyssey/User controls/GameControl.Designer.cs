@@ -190,6 +190,7 @@
             this.DoubleBuffered = true;
             this.Name = "GameControl";
             this.Size = new System.Drawing.Size(720, 720);
+            this.Enter += new System.EventHandler(this.GameControl_Enter);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.GameControl_KeyDown);
             this.panelBackground.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pbCoin_Logo)).EndInit();
