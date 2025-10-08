@@ -609,7 +609,7 @@ namespace RocketOdyssey
             moveTimer.Start();
             scrollTimer.Start();
             fuelTimer.Start();
-            www
+
             // Resume countdown only if it's still active
             if (launchCountdown > 0)
             {
