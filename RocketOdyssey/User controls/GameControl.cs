@@ -268,6 +268,7 @@ namespace RocketOdyssey
         private void GameControl_KeyDown(object sender, KeyEventArgs e)
         {
             if (controlsLocked) return; // Ignore input during launch delay
+            if (isOutOfFuel) return;    // Prevent changing sprite when out of fuel
 
             if (e.KeyCode == Keys.W || e.KeyCode == Keys.Up)
             {
@@ -303,6 +304,7 @@ namespace RocketOdyssey
         private void GameControl_KeyUp(object sender, KeyEventArgs e)
         {
             if (controlsLocked) return; // Ignore input during launch delay
+            if (isOutOfFuel) return;    // Prevent resetting sprite to idle after fuel runs out
 
             if (e.KeyCode == Keys.W || e.KeyCode == Keys.Up)
                 upPressed = false;
