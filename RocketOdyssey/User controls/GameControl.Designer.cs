@@ -103,6 +103,7 @@
             this.btnPause.Rounding = new System.Windows.Forms.Padding(8);
             this.btnPause.Size = new System.Drawing.Size(50, 45);
             this.btnPause.TabIndex = 26;
+            this.btnPause.TabStop = false;
             this.btnPause.TextAlignment = System.Drawing.StringAlignment.Center;
             this.btnPause.TextOffset = new System.Drawing.Point(0, 0);
             this.btnPause.Click += new System.EventHandler(this.btnPause_Click);

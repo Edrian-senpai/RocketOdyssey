@@ -1,9 +1,10 @@
-﻿using System;
+﻿using RocketOdyssey.Database;
+using RocketOdyssey.User_controls;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
-using RocketOdyssey.Database;
 
 namespace RocketOdyssey
 {
@@ -12,16 +13,18 @@ namespace RocketOdyssey
         // Background scrolling
         private Timer scrollTimer;
         private Image backgroundImage;
-        private int scrollSpeed = 0;          // Background scroll speed
+        private int scrollSpeed = 1;          // Background scroll speed
         private int scrollOffset = 0;
 
         // Player movement state
-        // Add this with other fields
         private bool controlsLocked = true; // Rocket controls disabled at start
         private bool upPressed = false;
         private bool downPressed = false;
         private bool leftPressed = false;
         private bool rightPressed = false;
+
+        private int launchCountdown = 10;     // default
+        private Timer launchDelayTimer;
 
         // GIF sprites
         private Image idleGif;
@@ -30,7 +33,7 @@ namespace RocketOdyssey
         private Image landGif;
 
         // Movement settings
-        private int moveStep = 0;             // Rocket movement speed
+        private int moveStep = 1;             // Rocket movement speed
         private readonly int minX = 0;
         private readonly int minY = 140;
         private readonly int maxX = 650;
@@ -64,6 +67,9 @@ namespace RocketOdyssey
         // NEW: tracks that the rocket has run out of fuel (prevents sprite changes)
         private bool isOutOfFuel = false;
 
+        private PauseOverlayControl pauseOverlay;
+        private bool isPaused = false;
+
         public GameControl()
         {
             InitializeComponent();
@@ -81,6 +87,21 @@ namespace RocketOdyssey
             hp = armor;
             rocketWeapon = weapon;
 
+            // Restore rocket position & background stage from DB
+            var (posX, posY, stageIdx, stageOffset) = DatabaseHelper.LoadPlayerState(currentUser);
+            PlayerRocket.Location = new Point(posX, posY);
+            currentStageIndex = stageIdx;
+            currentStageOffset = stageOffset;
+
+            // Load saved fuel from DB
+            fuel = DatabaseHelper.LoadPlayerFuel(currentUser);
+            pbFuel.Value = fuel;
+
+            // Load saved HP from DB
+            hp = DatabaseHelper.LoadPlayerHP(currentUser);
+            pbHP.Value = hp;
+
+
             // === Initialize UI ===
             pbHP.MaxValue = 100;
             pbHP.Value = hp;                     // start from DB or default
@@ -93,17 +114,38 @@ namespace RocketOdyssey
 
             // Adjust movement speed based on upgrade
             moveStep += rocketSpeed; // default + upgrade bonus
-            fuel = 100; // reset full tank
+            
 
-            // Disable controls for 10 seconds after launch
-            Timer launchDelayTimer = new Timer();
-            launchDelayTimer.Interval = 10000; // 10 seconds
-            launchDelayTimer.Tick += (s, e) =>
+            // ---- Launch countdown setup ----
+            launchCountdown = DatabaseHelper.LoadLaunchTimer(currentUser);
+
+            // Determine if player has meaningful progress
+            bool hasProgress =
+                   fuel < 100 || hp < 100
+                || currentStageIndex > 0
+                || currentStageOffset > 0;
+
+            // If player already has progress and no pending countdown → skip lock
+            if (hasProgress && launchCountdown == 0)
             {
-                controlsLocked = false;         // unlock movement
-                launchDelayTimer.Stop();        // stop the timer
-            };
-            launchDelayTimer.Start();
+                controlsLocked = false;
+            }
+            else
+            {
+                // Start or resume countdown
+                if (launchCountdown == 0)
+                    launchCountdown = 10; // fresh start
+
+                controlsLocked = true;
+                //lblLaunchCountdown.Visible = true;
+                //lblLaunchCountdown.Text = $"Launch in {launchCountdown}s";
+
+                launchDelayTimer = new Timer();
+                launchDelayTimer.Interval = 1000;
+                launchDelayTimer.Tick += LaunchDelayTimer_Tick;
+                launchDelayTimer.Start();
+            }
+
 
             // ---- Background setup ----
             backgroundImage = panelBackground.BackgroundImage;
@@ -453,15 +495,49 @@ namespace RocketOdyssey
             countdownTimer.Start();
         }
 
+        private void LaunchDelayTimer_Tick(object sender, EventArgs e)
+        {
+            launchCountdown--;
+
+            if (launchCountdown <= 0)
+            {
+                controlsLocked = false;
+                //lblLaunchCountdown.Visible = false;
+
+                launchDelayTimer.Stop();
+                DatabaseHelper.SaveLaunchTimer(currentUser, 0); // clear after finished
+            }
+            else
+            {
+                //lblLaunchCountdown.Text = $"Launch in {launchCountdown}s";
+                DatabaseHelper.SaveLaunchTimer(currentUser, launchCountdown);
+            }
+        }
+
         private void SavePlayerProgress()
         {
-            DatabaseHelper.UpdateUpgrade(currentUser, "RocketArmor", hp);
+            DatabaseHelper.UpdateUpgrade(currentUser, "RocketArmor", rocketSpeed);
             DatabaseHelper.UpdateUpgrade(currentUser, "RocketSpeed", rocketSpeed);
             DatabaseHelper.UpdateUpgrade(currentUser, "RocketWeapon", rocketWeapon);
-
             DatabaseHelper.UpdateUpgrade(currentUser, "Score", score);
             DatabaseHelper.UpdatePlayerCoins(currentUser, coins);
+
+            DatabaseHelper.SavePlayerState(
+                currentUser,
+                PlayerRocket.Location.X,
+                PlayerRocket.Location.Y,
+                currentStageIndex,
+                currentStageOffset
+            );
+
+            DatabaseHelper.SavePlayerFuel(currentUser, fuel);
+            DatabaseHelper.SavePlayerHP(currentUser, hp);
+
+            // ✅ save remaining launch countdown
+            DatabaseHelper.SaveLaunchTimer(currentUser, launchCountdown);
         }
+
+
 
         private void GameControl_Enter(object sender, EventArgs e)
         {
@@ -470,7 +546,118 @@ namespace RocketOdyssey
 
         private void btnPause_Click(object sender, EventArgs e)
         {
+            if (isPaused) return;
 
+            // Stop game timers
+            moveTimer.Stop();
+            scrollTimer.Stop();
+            fuelTimer.Stop();
+            launchDelayTimer?.Stop();
+            controlsLocked = true;
+            isPaused = true;
+
+            // Create PauseOverlayControl with size 700x700
+            pauseOverlay = new PauseOverlayControl
+            {
+                Size = new Size(400, 400),
+                BackColor = Color.Transparent
+            };
+
+            // add it over panelBackground so it inherits that as its parent
+            panelBackground.Controls.Add(pauseOverlay);
+
+            pauseOverlay.Location = new Point(
+                (panelBackground.Width - pauseOverlay.Width) / 2,
+                (panelBackground.Height - pauseOverlay.Height) / 2
+            );
+
+            pauseOverlay.BringToFront();
+
+            pauseOverlay.BackColor = Color.FromArgb(200, 0, 0, 0);
+
+
+            // Hook up events
+            pauseOverlay.ResumeClicked += OnResumeClicked;
+            pauseOverlay.RestartClicked += OnRestartClicked;
+            pauseOverlay.MainMenuClicked += OnMainMenuClicked;
         }
+
+        private void OnResumeClicked()
+        {
+            // remove pause overlay
+            panelBackground.Controls.Remove(pauseOverlay);
+            pauseOverlay.Dispose();
+            pauseOverlay = null;
+
+            // reset movement keys
+            upPressed = false;
+            downPressed = false;
+            leftPressed = false;
+            rightPressed = false;
+
+            // reset rocket sprite & rotation
+            currentRocketSprite = idleGif;
+            currentRotation = 0f;
+            PlayerRocket.Invalidate();
+
+            // restore focus
+            this.Select();
+            this.Focus();
+            this.TabStop = true;
+
+            // restart normal game timers
+            moveTimer.Start();
+            scrollTimer.Start();
+            fuelTimer.Start();
+            www
+            // Resume countdown only if it's still active
+            if (launchCountdown > 0)
+            {
+                launchDelayTimer?.Start();
+                controlsLocked = true;
+            }
+            else
+            {
+                controlsLocked = false;
+            }
+
+            isPaused = false;
+        }
+
+        private void OnRestartClicked()
+        {
+            // remove overlay
+            this.Controls.Remove(pauseOverlay);
+            pauseOverlay.Dispose();
+            pauseOverlay = null;
+
+            // reset player progress in DB before starting a new game
+            DatabaseHelper.ResetPlayerProgress(currentUser);
+
+            // start new game
+            GameControl newGame = new GameControl();
+            GameForm parentForm = (GameForm)this.FindForm();
+            parentForm.Controls.Clear();
+            parentForm.Controls.Add(newGame);
+        }
+
+        private void OnMainMenuClicked()
+        {
+            // if countdown is active, save the remaining seconds
+            if (launchDelayTimer != null && launchDelayTimer.Enabled)
+            {
+                launchDelayTimer.Stop();  // stop it so it doesn’t tick after leaving
+                DatabaseHelper.SaveLaunchTimer(currentUser, launchCountdown);
+            }
+
+            SavePlayerProgress(); // also saves fuel, hp, etc.
+
+            // back to menu
+            MainMenuControl menu = new MainMenuControl();
+            GameForm parentForm = (GameForm)this.FindForm();
+            parentForm.Controls.Clear();
+            parentForm.Controls.Add(menu);
+        }
+
     }
 }

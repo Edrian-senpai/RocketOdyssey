@@ -124,6 +124,12 @@
     <Compile Include="User controls\GameControl.Designer.cs">
       <DependentUpon>GameControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="User controls\PauseOverlayControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="User controls\PauseOverlayControl.Designer.cs">
+      <DependentUpon>PauseOverlayControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="User controls\UpgradeControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -157,6 +163,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="User controls\MainMenuControl.resx">
       <DependentUpon>MainMenuControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="User controls\PauseOverlayControl.resx">
+      <DependentUpon>PauseOverlayControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="User controls\UpgradeControl.resx">
       <DependentUpon>UpgradeControl.cs</DependentUpon>
@@ -234,6 +243,8 @@
     <Content Include="Images&amp;Animations\rocket_2 animation\rocket_2_smol.gif" />
     <Content Include="Images&amp;Animations\rocket_2 animation\rocket_2_smol_down.gif" />
     <Content Include="Images&amp;Animations\rocket_2 animation\rocket_2_smol_up.gif" />
+    <None Include="Resources\Pause_Logo1.png" />
+    <None Include="Resources\Pause_Logo.png" />
     <None Include="Resources\Pause_icon.png" />
     <None Include="Resources\Back_icon.png" />
   </ItemGroup>

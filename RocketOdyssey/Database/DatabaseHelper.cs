@@ -19,6 +19,7 @@ namespace RocketOdyssey.Database
             using (var conn = new SQLiteConnection(connectionString))
             {
                 conn.Open();
+
                 string createTable = @"
                 CREATE TABLE IF NOT EXISTS Users (
                     UserID              INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -28,9 +29,15 @@ namespace RocketOdyssey.Database
                     Coins               INTEGER DEFAULT 0,
                     RocketSpeed         INTEGER DEFAULT 0,
                     RocketArmor         INTEGER DEFAULT 100,
-                    RocketWeapon        INTEGER DEFAULT 0
+                    RocketWeapon        INTEGER DEFAULT 0,
+                    RocketPosX          INTEGER DEFAULT 326,
+                    RocketPosY          INTEGER DEFAULT 510,
+                    BackgroundStage     INTEGER DEFAULT 0,
+                    StageOffset         INTEGER DEFAULT 0,
+                    FuelRemaining       INTEGER DEFAULT 100,
+                    CurrentHP           INTEGER DEFAULT 100,
+                    LaunchTimerRemaining INTEGER DEFAULT 0  
                 );";
-
                 using (var cmd = new SQLiteCommand(createTable, conn))
                 {
                     cmd.ExecuteNonQuery();
@@ -136,6 +143,31 @@ namespace RocketOdyssey.Database
             }
         }
 
+        // Reset the player's progress to defaults
+        public static void ResetPlayerProgress(string username)
+        {
+            using (var conn = GetConnection())
+            {
+                conn.Open();
+                string query = @"
+            UPDATE Users SET 
+                RocketPosX = 326, 
+                RocketPosY = 510,
+                BackgroundStage = 0,
+                StageOffset = 0,
+                FuelRemaining = 100,
+                CurrentHP = 100,
+                LaunchTimerRemaining = 10
+            WHERE Username = @username";
+                using (var cmd = new SQLiteCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@username", username);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+
         // Get player's coin balance
         public static int GetPlayerCoins(string username)
         {
@@ -168,6 +200,153 @@ namespace RocketOdyssey.Database
             }
         }
 
+        // Save rocket position and background stage
+        public static void SavePlayerState(string username, int posX, int posY, int stageIndex, int stageOffset)
+        {
+            using (var conn = GetConnection())
+            {
+                conn.Open();
+                string query = @"UPDATE Users 
+                         SET RocketPosX = @x, RocketPosY = @y, 
+                             BackgroundStage = @stage, StageOffset = @offset
+                         WHERE Username = @username";
+
+                using (var cmd = new SQLiteCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@x", posX);
+                    cmd.Parameters.AddWithValue("@y", posY);
+                    cmd.Parameters.AddWithValue("@stage", stageIndex);
+                    cmd.Parameters.AddWithValue("@offset", stageOffset);
+                    cmd.Parameters.AddWithValue("@username", username);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        // Load rocket position and background stage
+        public static (int posX, int posY, int stageIndex, int stageOffset) LoadPlayerState(string username)
+        {
+            using (var conn = GetConnection())
+            {
+                conn.Open();
+                string query = @"SELECT RocketPosX, RocketPosY, BackgroundStage, StageOffset 
+                         FROM Users WHERE Username = @username";
+
+                using (var cmd = new SQLiteCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@username", username);
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            int x = Convert.ToInt32(reader["RocketPosX"]);
+                            int y = Convert.ToInt32(reader["RocketPosY"]);
+                            int stage = Convert.ToInt32(reader["BackgroundStage"]);
+                            int offset = Convert.ToInt32(reader["StageOffset"]);
+                            return (x, y, stage, offset);
+                        }
+                    }
+                }
+            }
+
+            return (326, 510, 0, 0); // defaults
+        }
+
+        // Save fuel
+        public static void SavePlayerFuel(string username, int fuel)
+        {
+            using (var conn = GetConnection())
+            {
+                conn.Open();
+                string query = @"UPDATE Users SET FuelRemaining = @fuel WHERE Username = @username";
+                using (var cmd = new SQLiteCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@fuel", fuel);
+                    cmd.Parameters.AddWithValue("@username", username);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        // Load fuel
+        public static int LoadPlayerFuel(string username)
+        {
+            using (var conn = GetConnection())
+            {
+                conn.Open();
+                string query = @"SELECT FuelRemaining FROM Users WHERE Username = @username";
+                using (var cmd = new SQLiteCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@username", username);
+                    object result = cmd.ExecuteScalar();
+                    return result != null ? Convert.ToInt32(result) : 100; // default to full fuel
+                }
+            }
+        }
+
+        // Save current HP
+        public static void SavePlayerHP(string username, int hp)
+        {
+            using (var conn = GetConnection())
+            {
+                conn.Open();
+                string query = @"UPDATE Users SET CurrentHP = @hp WHERE Username = @username";
+                using (var cmd = new SQLiteCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@hp", hp);
+                    cmd.Parameters.AddWithValue("@username", username);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        // Load current HP
+        public static int LoadPlayerHP(string username)
+        {
+            using (var conn = GetConnection())
+            {
+                conn.Open();
+                string query = @"SELECT CurrentHP FROM Users WHERE Username = @username";
+                using (var cmd = new SQLiteCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@username", username);
+                    object result = cmd.ExecuteScalar();
+                    return result != null ? Convert.ToInt32(result) : 100; // default full HP
+                }
+            }
+        }
+
+        // save remaining launch timer
+        public static void SaveLaunchTimer(string username, int secondsRemaining)
+        {
+            using (var conn = GetConnection())
+            {
+                conn.Open();
+                string query = @"UPDATE Users SET LaunchTimerRemaining = @seconds WHERE Username = @username";
+                using (var cmd = new SQLiteCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@seconds", secondsRemaining);
+                    cmd.Parameters.AddWithValue("@username", username);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        // Load remaining launch timer
+        public static int LoadLaunchTimer(string username)
+        {
+            using (var conn = GetConnection())
+            {
+                conn.Open();
+                string query = @"SELECT LaunchTimerRemaining FROM Users WHERE Username = @username";
+                using (var cmd = new SQLiteCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@username", username);
+                    object result = cmd.ExecuteScalar();
+                    return result != null ? Convert.ToInt32(result) : 0;
+                }
+            }
+        }
 
     }
 }
