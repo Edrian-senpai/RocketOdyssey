@@ -30,6 +30,7 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(GameControl));
             this.panelBackground = new System.Windows.Forms.Panel();
+            this.btnPause = new CuoreUI.Controls.cuiButton();
             this.pbCoin_Logo = new System.Windows.Forms.PictureBox();
             this.lblCoins = new CuoreUI.Controls.cuiLabel();
             this.lblScore = new CuoreUI.Controls.cuiLabel();
@@ -50,6 +51,7 @@
             this.panelBackground.BackColor = System.Drawing.Color.Transparent;
             this.panelBackground.BackgroundImage = global::RocketOdyssey.Properties.Resources.Full_bg_final;
             this.panelBackground.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
+            this.panelBackground.Controls.Add(this.btnPause);
             this.panelBackground.Controls.Add(this.pbCoin_Logo);
             this.panelBackground.Controls.Add(this.lblCoins);
             this.panelBackground.Controls.Add(this.lblScore);
@@ -65,6 +67,46 @@
             this.panelBackground.TabIndex = 0;
             this.panelBackground.Paint += new System.Windows.Forms.PaintEventHandler(this.panelBackground_Paint);
             // 
+            // btnPause
+            // 
+            this.btnPause.BackColor = System.Drawing.Color.Transparent;
+            this.btnPause.CheckButton = false;
+            this.btnPause.Checked = false;
+            this.btnPause.CheckedBackground = System.Drawing.Color.Transparent;
+            this.btnPause.CheckedForeColor = System.Drawing.Color.Transparent;
+            this.btnPause.CheckedImageTint = System.Drawing.Color.Transparent;
+            this.btnPause.CheckedOutline = System.Drawing.Color.Transparent;
+            this.btnPause.Content = "";
+            this.btnPause.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnPause.DialogResult = System.Windows.Forms.DialogResult.None;
+            this.btnPause.Font = new System.Drawing.Font("Palatino Linotype", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnPause.ForeColor = System.Drawing.Color.Transparent;
+            this.btnPause.HoverBackground = System.Drawing.Color.Silver;
+            this.btnPause.HoverForeColor = System.Drawing.Color.White;
+            this.btnPause.HoverImageTint = System.Drawing.Color.Silver;
+            this.btnPause.HoverOutline = System.Drawing.Color.Transparent;
+            this.btnPause.Image = global::RocketOdyssey.Properties.Resources.Pause_icon;
+            this.btnPause.ImageAutoCenter = true;
+            this.btnPause.ImageExpand = new System.Drawing.Point(10, 10);
+            this.btnPause.ImageOffset = new System.Drawing.Point(0, 0);
+            this.btnPause.Location = new System.Drawing.Point(326, 10);
+            this.btnPause.Name = "btnPause";
+            this.btnPause.NormalBackground = System.Drawing.Color.Transparent;
+            this.btnPause.NormalForeColor = System.Drawing.Color.Transparent;
+            this.btnPause.NormalImageTint = System.Drawing.Color.White;
+            this.btnPause.NormalOutline = System.Drawing.Color.Transparent;
+            this.btnPause.OutlineThickness = 1F;
+            this.btnPause.PressedBackground = System.Drawing.Color.LightGray;
+            this.btnPause.PressedForeColor = System.Drawing.Color.LightGray;
+            this.btnPause.PressedImageTint = System.Drawing.Color.LightGray;
+            this.btnPause.PressedOutline = System.Drawing.Color.Transparent;
+            this.btnPause.Rounding = new System.Windows.Forms.Padding(8);
+            this.btnPause.Size = new System.Drawing.Size(50, 45);
+            this.btnPause.TabIndex = 26;
+            this.btnPause.TextAlignment = System.Drawing.StringAlignment.Center;
+            this.btnPause.TextOffset = new System.Drawing.Point(0, 0);
+            this.btnPause.Click += new System.EventHandler(this.btnPause_Click);
+            // 
             // pbCoin_Logo
             // 
             this.pbCoin_Logo.BackColor = System.Drawing.Color.Transparent;
@@ -72,7 +114,7 @@
             this.pbCoin_Logo.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.pbCoin_Logo.Location = new System.Drawing.Point(560, 5);
             this.pbCoin_Logo.Name = "pbCoin_Logo";
-            this.pbCoin_Logo.Size = new System.Drawing.Size(56, 30);
+            this.pbCoin_Logo.Size = new System.Drawing.Size(56, 33);
             this.pbCoin_Logo.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.pbCoin_Logo.TabIndex = 22;
             this.pbCoin_Logo.TabStop = false;
@@ -83,18 +125,18 @@
             this.lblCoins.Content = "---";
             this.lblCoins.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblCoins.ForeColor = System.Drawing.Color.White;
-            this.lblCoins.HorizontalAlignment = System.Drawing.StringAlignment.Center;
-            this.lblCoins.Location = new System.Drawing.Point(623, 5);
+            this.lblCoins.HorizontalAlignment = System.Drawing.StringAlignment.Near;
+            this.lblCoins.Location = new System.Drawing.Point(613, 8);
             this.lblCoins.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.lblCoins.Name = "lblCoins";
-            this.lblCoins.Size = new System.Drawing.Size(93, 30);
+            this.lblCoins.Size = new System.Drawing.Size(107, 30);
             this.lblCoins.TabIndex = 21;
             this.lblCoins.TabStop = false;
             this.lblCoins.VerticalAlignment = System.Drawing.StringAlignment.Center;
             // 
             // lblScore
             // 
-            this.lblScore.Content = "Score:\\ ";
+            this.lblScore.Content = "Score:\\ \\ ---";
             this.lblScore.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblScore.ForeColor = System.Drawing.Color.White;
             this.lblScore.HorizontalAlignment = System.Drawing.StringAlignment.Near;
@@ -172,7 +214,7 @@
             this.PlayerRocket.Image = global::RocketOdyssey.Properties.Resources.rocket_2_smol;
             this.PlayerRocket.ImageLocation = "";
             this.PlayerRocket.InitialImage = null;
-            this.PlayerRocket.Location = new System.Drawing.Point(326, 520);
+            this.PlayerRocket.Location = new System.Drawing.Point(326, 510);
             this.PlayerRocket.Margin = new System.Windows.Forms.Padding(0);
             this.PlayerRocket.Name = "PlayerRocket";
             this.PlayerRocket.Size = new System.Drawing.Size(50, 100);
@@ -212,5 +254,6 @@
         private CuoreUI.Controls.cuiProgressBarHorizontal pbHP;
         private CuoreUI.Controls.cuiLabel lblCoins;
         private System.Windows.Forms.PictureBox pbCoin_Logo;
+        private CuoreUI.Controls.cuiButton btnPause;
     }
 }

@@ -1,6 +1,7 @@
-﻿using System.Data;
-using System.Drawing;
+﻿using System;
+using System.Data;
 using System.Data.SQLite;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace RocketOdyssey.User_controls
@@ -59,6 +60,25 @@ namespace RocketOdyssey.User_controls
             // Move Rank column to the first position
             tblLeaderboards.Columns["Rank"].DisplayIndex = 0;
         }
+        private void btnBack_Click(object sender, EventArgs e)
+        {
+            // Get a reference to the parent form (GameForm)
+            GameForm parentForm = (GameForm)this.FindForm();
 
+            if (parentForm != null)
+            {
+                // Create a new MainMenuControl instance
+                MainMenuControl mainMenu = new MainMenuControl();
+
+                // Clear the current controls (removes UpgradeControl)
+                parentForm.Controls.Clear();
+
+                // Add the MainMenuControl
+                parentForm.Controls.Add(mainMenu);
+
+                // Make sure the main menu gets focus
+                mainMenu.Focus();
+            }
+        }
     }
 }

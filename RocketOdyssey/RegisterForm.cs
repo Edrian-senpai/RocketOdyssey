@@ -26,11 +26,6 @@ namespace RocketOdyssey
             this.Close();
         }
 
-        private void RegisterForm_Load(object sender, EventArgs e)
-        {
-
-        }
-
          private void btnR_ShowPassword_Click(object sender, EventArgs e)
          {
              // Toggle password visibility

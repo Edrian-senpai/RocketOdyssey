@@ -61,10 +61,51 @@ namespace RocketOdyssey
             parentForm.Controls.Add(leaderboardControl);
         }
 
-        // Event handler for the Exit button (exits the application)
-        private void btnExit_Click(object sender, EventArgs e)
+        // Event handler for the Log out button 
+        private void btnLogOut_Click(object sender, EventArgs e)
         {
-            Application.Exit();
+            // Ask for confirmation
+            DialogResult result = MessageBox.Show(
+                "Are you sure you want to log out?",
+                "Confirm Log Out",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question
+            );
+
+            if (result == DialogResult.Yes)
+            {
+
+                // Close the game form and return to login
+                GameForm parentForm = (GameForm)this.FindForm();
+
+                // Hide GameForm first (to avoid flashing)
+                parentForm.Hide();
+
+                using (var loginForm = new LoginForm())
+                {
+                    // Show login again as modal
+                    if (loginForm.ShowDialog() == DialogResult.OK)
+                    {
+                        // User logged in again → re-open GameForm
+                        var newGameForm = new GameForm();
+                        newGameForm.Show();
+                    }
+                    else
+                    {
+                        // User canceled login → exit app
+                        Application.Exit();
+                    }
+                }
+
+                // Close the old GameForm after returning from login
+                parentForm.Close();
+            }
+            else
+            {
+                // User clicked No → do nothing
+                return;
+            }
         }
+
     }
 }

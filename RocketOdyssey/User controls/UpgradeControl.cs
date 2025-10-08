@@ -90,5 +90,25 @@ namespace RocketOdyssey
                 MessageBox.Show("Weapon is already at max level!");
             }
         }
+        private void btnBack_Click(object sender, EventArgs e)
+        {
+            // Get a reference to the parent form (GameForm)
+            GameForm parentForm = (GameForm)this.FindForm();
+
+            if (parentForm != null)
+            {
+                // Create a new MainMenuControl instance
+                MainMenuControl mainMenu = new MainMenuControl();
+
+                // Clear the current controls (removes UpgradeControl)
+                parentForm.Controls.Clear();
+
+                // Add the MainMenuControl
+                parentForm.Controls.Add(mainMenu);
+
+                // Make sure the main menu gets focus
+                mainMenu.Focus();
+            }
+        }
     }
 }

@@ -25,7 +25,8 @@ namespace RocketOdyssey.Database
                     Username            TEXT NOT NULL UNIQUE,
                     PasswordHash        TEXT NOT NULL,
                     Score               INTEGER DEFAULT 0,
-                    RocketSpeedUpgrade  INTEGER DEFAULT 0,
+                    Coins               INTEGER DEFAULT 0,
+                    RocketSpeed         INTEGER DEFAULT 0,
                     RocketArmor         INTEGER DEFAULT 100,
                     RocketWeapon        INTEGER DEFAULT 0
                 );";
@@ -97,7 +98,7 @@ namespace RocketOdyssey.Database
             using (var conn = GetConnection())
             {
                 conn.Open();
-                string query = @"SELECT RocketSpeedUpgrade, RocketArmor, RocketWeapon
+                string query = @"SELECT RocketSpeed, RocketArmor, RocketWeapon
                          FROM Users
                          WHERE Username = @username";
 
@@ -108,7 +109,7 @@ namespace RocketOdyssey.Database
                     {
                         if (reader.Read())
                         {
-                            int speed = Convert.ToInt32(reader["RocketSpeedUpgrade"]);
+                            int speed = Convert.ToInt32(reader["RocketSpeed"]);
                             int armor = Convert.ToInt32(reader["RocketArmor"]);
                             int weapon = Convert.ToInt32(reader["RocketWeapon"]);
                             return (speed, armor, weapon);
@@ -134,6 +135,39 @@ namespace RocketOdyssey.Database
                 }
             }
         }
+
+        // Get player's coin balance
+        public static int GetPlayerCoins(string username)
+        {
+            using (var conn = GetConnection())
+            {
+                conn.Open();
+                string query = @"SELECT Coins FROM Users WHERE Username = @username";
+                using (var cmd = new SQLiteCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@username", username);
+                    object result = cmd.ExecuteScalar();
+                    return result != null ? Convert.ToInt32(result) : 0;
+                }
+            }
+        }
+
+        // Update player's coin balance
+        public static void UpdatePlayerCoins(string username, int newCoins)
+        {
+            using (var conn = GetConnection())
+            {
+                conn.Open();
+                string query = @"UPDATE Users SET Coins = @coins WHERE Username = @username";
+                using (var cmd = new SQLiteCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@coins", newCoins);
+                    cmd.Parameters.AddWithValue("@username", username);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
 
     }
 }

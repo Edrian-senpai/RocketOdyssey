@@ -31,11 +31,6 @@ namespace RocketOdyssey
             this.Show(); // Show login form again after register form closes
         }
 
-        private void LoginForm_Load(object sender, EventArgs e)
-        {
-
-        }
-
         private void btnShowPassword_Click(object sender, EventArgs e)
         {
             // Toggle password visibility

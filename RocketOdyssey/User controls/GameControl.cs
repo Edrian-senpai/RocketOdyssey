@@ -12,7 +12,7 @@ namespace RocketOdyssey
         // Background scrolling
         private Timer scrollTimer;
         private Image backgroundImage;
-        private int scrollSpeed = 1;          // Background scroll speed
+        private int scrollSpeed = 0;          // Background scroll speed
         private int scrollOffset = 0;
 
         // Player movement state
@@ -30,7 +30,7 @@ namespace RocketOdyssey
         private Image landGif;
 
         // Movement settings
-        private int moveStep = 1;             // Rocket movement speed
+        private int moveStep = 0;             // Rocket movement speed
         private readonly int minX = 0;
         private readonly int minY = 140;
         private readonly int maxX = 650;
@@ -45,9 +45,10 @@ namespace RocketOdyssey
 
         // Player stats
         private int score = 0;
+        private int coins = 0;
         private int hp = 100;             // will be overridden by DB
         private int fuel = 100;           // starts full, drains during play
-        private int rocketSpeedUpgrade = 0;
+        private int rocketSpeed = 0;
         private int rocketWeapon = 0;
 
         // Rocket fuel Timer
@@ -73,7 +74,10 @@ namespace RocketOdyssey
 
             // ---- Load player upgrades from DB ----
             var (speed, armor, weapon) = DatabaseHelper.GetPlayerUpgrades(currentUser);
-            rocketSpeedUpgrade = speed;
+            // Load coins from DB
+            coins = DatabaseHelper.GetPlayerCoins(currentUser);
+
+            rocketSpeed = speed;
             hp = armor;
             rocketWeapon = weapon;
 
@@ -83,11 +87,12 @@ namespace RocketOdyssey
             pbFuel.MaxValue = 100;
             pbFuel.Value = fuel;                 // full at start
 
-            lblScore.Text = $"Score: {score}";
-            lblCoins.Text = $"Coins: 0";         // or load from DB if you have coins
+            lblScore.Content = $"Score: {score}";
+            coins += 5;  // example: collected 5 coins
+            lblCoins.Content = $"{coins}";         // or load from DB if you have coins
 
             // Adjust movement speed based on upgrade
-            moveStep += rocketSpeedUpgrade; // default + upgrade bonus
+            moveStep += rocketSpeed; // default + upgrade bonus
             fuel = 100; // reset full tank
 
             // Disable controls for 10 seconds after launch
@@ -450,18 +455,22 @@ namespace RocketOdyssey
 
         private void SavePlayerProgress()
         {
-            // Save score and stats to DB
             DatabaseHelper.UpdateUpgrade(currentUser, "RocketArmor", hp);
-            DatabaseHelper.UpdateUpgrade(currentUser, "RocketSpeedUpgrade", rocketSpeedUpgrade);
+            DatabaseHelper.UpdateUpgrade(currentUser, "RocketSpeed", rocketSpeed);
             DatabaseHelper.UpdateUpgrade(currentUser, "RocketWeapon", rocketWeapon);
 
-            // Save score
             DatabaseHelper.UpdateUpgrade(currentUser, "Score", score);
+            DatabaseHelper.UpdatePlayerCoins(currentUser, coins);
         }
 
         private void GameControl_Enter(object sender, EventArgs e)
         {
             this.Focus();
+        }
+
+        private void btnPause_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

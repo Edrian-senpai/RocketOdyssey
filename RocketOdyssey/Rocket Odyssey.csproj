@@ -221,6 +221,7 @@
     <Content Include="Images&amp;Animations\Background\OuterSpace.jpg" />
     <Content Include="Images&amp;Animations\Background\OuterSpace_long.jpg" />
     <Content Include="Images&amp;Animations\Icons&amp;Logos\Armor_Logo.png" />
+    <Content Include="Images&amp;Animations\Icons&amp;Logos\Back_icon.png" />
     <Content Include="Images&amp;Animations\Icons&amp;Logos\coin_Icon.gif" />
     <Content Include="Images&amp;Animations\Icons&amp;Logos\Pause_icon.png" />
     <Content Include="Images&amp;Animations\Icons&amp;Logos\Rocket_Armor_Logo.png" />
@@ -233,6 +234,8 @@
     <Content Include="Images&amp;Animations\rocket_2 animation\rocket_2_smol.gif" />
     <Content Include="Images&amp;Animations\rocket_2 animation\rocket_2_smol_down.gif" />
     <Content Include="Images&amp;Animations\rocket_2 animation\rocket_2_smol_up.gif" />
+    <None Include="Resources\Pause_icon.png" />
+    <None Include="Resources\Back_icon.png" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

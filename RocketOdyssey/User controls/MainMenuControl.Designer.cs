@@ -31,9 +31,11 @@
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.btnStart = new CuoreUI.Controls.cuiButton();
             this.btnUpgrades = new CuoreUI.Controls.cuiButton();
-            this.btnExit = new CuoreUI.Controls.cuiButton();
+            this.btnLogOut = new CuoreUI.Controls.cuiButton();
             this.btnLeaderboards = new CuoreUI.Controls.cuiButton();
+            this.pbR_Logo = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbR_Logo)).BeginInit();
             this.SuspendLayout();
             // 
             // pictureBox1
@@ -46,7 +48,7 @@
             this.pictureBox1.Image = global::RocketOdyssey.Properties.Resources.rocket_2_land_smol;
             this.pictureBox1.ImageLocation = "";
             this.pictureBox1.InitialImage = null;
-            this.pictureBox1.Location = new System.Drawing.Point(326, 520);
+            this.pictureBox1.Location = new System.Drawing.Point(326, 550);
             this.pictureBox1.Margin = new System.Windows.Forms.Padding(0);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(50, 100);
@@ -135,45 +137,45 @@
             this.btnUpgrades.TextOffset = new System.Drawing.Point(0, 0);
             this.btnUpgrades.Click += new System.EventHandler(this.btnUpgrades_Click);
             // 
-            // btnExit
+            // btnLogOut
             // 
-            this.btnExit.BackColor = System.Drawing.Color.Transparent;
-            this.btnExit.CheckButton = false;
-            this.btnExit.Checked = false;
-            this.btnExit.CheckedBackground = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(106)))), ((int)(((byte)(0)))));
-            this.btnExit.CheckedForeColor = System.Drawing.Color.White;
-            this.btnExit.CheckedImageTint = System.Drawing.Color.White;
-            this.btnExit.CheckedOutline = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(106)))), ((int)(((byte)(0)))));
-            this.btnExit.Content = "Exit";
-            this.btnExit.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.btnExit.DialogResult = System.Windows.Forms.DialogResult.None;
-            this.btnExit.Font = new System.Drawing.Font("Palatino Linotype", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnExit.ForeColor = System.Drawing.Color.White;
-            this.btnExit.HoverBackground = System.Drawing.Color.Red;
-            this.btnExit.HoverForeColor = System.Drawing.Color.LightGray;
-            this.btnExit.HoverImageTint = System.Drawing.Color.Red;
-            this.btnExit.HoverOutline = System.Drawing.Color.FromArgb(((int)(((byte)(32)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-            this.btnExit.Image = null;
-            this.btnExit.ImageAutoCenter = true;
-            this.btnExit.ImageExpand = new System.Drawing.Point(0, 0);
-            this.btnExit.ImageOffset = new System.Drawing.Point(0, 0);
-            this.btnExit.Location = new System.Drawing.Point(270, 460);
-            this.btnExit.Name = "btnExit";
-            this.btnExit.NormalBackground = System.Drawing.Color.Firebrick;
-            this.btnExit.NormalForeColor = System.Drawing.Color.White;
-            this.btnExit.NormalImageTint = System.Drawing.Color.Firebrick;
-            this.btnExit.NormalOutline = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-            this.btnExit.OutlineThickness = 1F;
-            this.btnExit.PressedBackground = System.Drawing.Color.RosyBrown;
-            this.btnExit.PressedForeColor = System.Drawing.Color.LightGray;
-            this.btnExit.PressedImageTint = System.Drawing.Color.RosyBrown;
-            this.btnExit.PressedOutline = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-            this.btnExit.Rounding = new System.Windows.Forms.Padding(8);
-            this.btnExit.Size = new System.Drawing.Size(169, 45);
-            this.btnExit.TabIndex = 8;
-            this.btnExit.TextAlignment = System.Drawing.StringAlignment.Center;
-            this.btnExit.TextOffset = new System.Drawing.Point(0, 0);
-            this.btnExit.Click += new System.EventHandler(this.btnExit_Click);
+            this.btnLogOut.BackColor = System.Drawing.Color.Transparent;
+            this.btnLogOut.CheckButton = false;
+            this.btnLogOut.Checked = false;
+            this.btnLogOut.CheckedBackground = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(106)))), ((int)(((byte)(0)))));
+            this.btnLogOut.CheckedForeColor = System.Drawing.Color.White;
+            this.btnLogOut.CheckedImageTint = System.Drawing.Color.White;
+            this.btnLogOut.CheckedOutline = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(106)))), ((int)(((byte)(0)))));
+            this.btnLogOut.Content = "Log Out";
+            this.btnLogOut.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnLogOut.DialogResult = System.Windows.Forms.DialogResult.None;
+            this.btnLogOut.Font = new System.Drawing.Font("Palatino Linotype", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnLogOut.ForeColor = System.Drawing.Color.White;
+            this.btnLogOut.HoverBackground = System.Drawing.Color.Red;
+            this.btnLogOut.HoverForeColor = System.Drawing.Color.LightGray;
+            this.btnLogOut.HoverImageTint = System.Drawing.Color.Red;
+            this.btnLogOut.HoverOutline = System.Drawing.Color.FromArgb(((int)(((byte)(32)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            this.btnLogOut.Image = null;
+            this.btnLogOut.ImageAutoCenter = true;
+            this.btnLogOut.ImageExpand = new System.Drawing.Point(0, 0);
+            this.btnLogOut.ImageOffset = new System.Drawing.Point(0, 0);
+            this.btnLogOut.Location = new System.Drawing.Point(270, 460);
+            this.btnLogOut.Name = "btnLogOut";
+            this.btnLogOut.NormalBackground = System.Drawing.Color.Firebrick;
+            this.btnLogOut.NormalForeColor = System.Drawing.Color.White;
+            this.btnLogOut.NormalImageTint = System.Drawing.Color.Firebrick;
+            this.btnLogOut.NormalOutline = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            this.btnLogOut.OutlineThickness = 1F;
+            this.btnLogOut.PressedBackground = System.Drawing.Color.RosyBrown;
+            this.btnLogOut.PressedForeColor = System.Drawing.Color.LightGray;
+            this.btnLogOut.PressedImageTint = System.Drawing.Color.RosyBrown;
+            this.btnLogOut.PressedOutline = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            this.btnLogOut.Rounding = new System.Windows.Forms.Padding(8);
+            this.btnLogOut.Size = new System.Drawing.Size(169, 45);
+            this.btnLogOut.TabIndex = 8;
+            this.btnLogOut.TextAlignment = System.Drawing.StringAlignment.Center;
+            this.btnLogOut.TextOffset = new System.Drawing.Point(0, 0);
+            this.btnLogOut.Click += new System.EventHandler(this.btnLogOut_Click);
             // 
             // btnLeaderboards
             // 
@@ -215,20 +217,35 @@
             this.btnLeaderboards.TextOffset = new System.Drawing.Point(0, 0);
             this.btnLeaderboards.Click += new System.EventHandler(this.btnLeaderboards_Click);
             // 
+            // pbR_Logo
+            // 
+            this.pbR_Logo.BackColor = System.Drawing.Color.Transparent;
+            this.pbR_Logo.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
+            this.pbR_Logo.Image = global::RocketOdyssey.Properties.Resources.Game_Logo;
+            this.pbR_Logo.Location = new System.Drawing.Point(233, 50);
+            this.pbR_Logo.Name = "pbR_Logo";
+            this.pbR_Logo.Size = new System.Drawing.Size(254, 133);
+            this.pbR_Logo.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.pbR_Logo.TabIndex = 10;
+            this.pbR_Logo.TabStop = false;
+            this.pbR_Logo.WaitOnLoad = true;
+            // 
             // MainMenuControl
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Inherit;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.BackgroundImage = global::RocketOdyssey.Properties.Resources.HomeBase;
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.Controls.Add(this.pbR_Logo);
             this.Controls.Add(this.btnLeaderboards);
-            this.Controls.Add(this.btnExit);
+            this.Controls.Add(this.btnLogOut);
             this.Controls.Add(this.btnUpgrades);
             this.Controls.Add(this.btnStart);
             this.Controls.Add(this.pictureBox1);
             this.Name = "MainMenuControl";
             this.Size = new System.Drawing.Size(720, 720);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbR_Logo)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -238,7 +255,8 @@
         private System.Windows.Forms.PictureBox pictureBox1;
         private CuoreUI.Controls.cuiButton btnStart;
         private CuoreUI.Controls.cuiButton btnUpgrades;
-        private CuoreUI.Controls.cuiButton btnExit;
+        private CuoreUI.Controls.cuiButton btnLogOut;
         private CuoreUI.Controls.cuiButton btnLeaderboards;
+        private System.Windows.Forms.PictureBox pbR_Logo;
     }
 }

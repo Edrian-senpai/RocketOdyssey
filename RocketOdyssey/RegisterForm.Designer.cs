@@ -352,7 +352,6 @@
             this.Name = "RegisterForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Rocket Odyssey";
-            this.Load += new System.EventHandler(this.RegisterForm_Load);
             this.pnRegister.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pb_Logo)).EndInit();
             this.ResumeLayout(false);

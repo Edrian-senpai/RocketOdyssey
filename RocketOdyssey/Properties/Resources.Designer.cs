@@ -93,6 +93,16 @@ namespace RocketOdyssey.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap Back_icon {
+            get {
+                object obj = ResourceManager.GetObject("Back_icon", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap Full_bg_final {
             get {
                 object obj = ResourceManager.GetObject("Full_bg_final", resourceCulture);
@@ -196,6 +206,16 @@ namespace RocketOdyssey.Properties {
         internal static System.Drawing.Bitmap OuterSpace_long {
             get {
                 object obj = ResourceManager.GetObject("OuterSpace_long", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Pause_icon {
+            get {
+                object obj = ResourceManager.GetObject("Pause_icon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
