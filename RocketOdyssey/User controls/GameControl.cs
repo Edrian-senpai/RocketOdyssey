@@ -474,7 +474,6 @@ namespace RocketOdyssey
         private void StartGameOverCountdown()
         {
             int countdown = 5;
-
             Timer countdownTimer = new Timer();
             countdownTimer.Interval = 1000; // 1 second
             countdownTimer.Tick += (s, ev) =>
@@ -483,17 +482,52 @@ namespace RocketOdyssey
                 if (countdown <= 0)
                 {
                     countdownTimer.Stop();
-
-                    // Stop scrolling AFTER the 5-second delay
                     scrollTimer.Stop();
 
+                    // Show Game Over dialog
                     MessageBox.Show("Out of fuel! Game Over.");
-                    SavePlayerProgress();
+
+                    // Check and update highscore before resetting
+                    DatabaseHelper.UpdateHighScore(currentUser, score);
+
+                    // Reset all rocket stats to default
+                    score = 0;
+                    hp = 100;
+                    fuel = 100;
+
+                    // Reset background/stage to default
+                    currentStageIndex = 0;
+                    currentStageOffset = 0;
+
+                    // Reset rocket position to default
+                    PlayerRocket.Location = new Point(326, 510);
+
+                    // Reset launch countdown
+                    launchCountdown = 10;
+
+                    // Save reset state
+                    DatabaseHelper.SavePlayerFuel(currentUser, fuel);
+                    DatabaseHelper.SavePlayerHP(currentUser, hp);
+                    DatabaseHelper.SavePlayerState(currentUser,
+                        PlayerRocket.Location.X,
+                        PlayerRocket.Location.Y,
+                        currentStageIndex,
+                        currentStageOffset);
+                    DatabaseHelper.SaveLaunchTimer(currentUser, launchCountdown);
+                    DatabaseHelper.UpdateUpgrade(currentUser, "Score", score);
+
+                    // Go back to main menu
+                    MainMenuControl menu = new MainMenuControl();
+                    GameForm parentForm = (GameForm)this.FindForm();
+                    parentForm.Controls.Clear();
+                    parentForm.Controls.Add(menu);
                 }
             };
-
             countdownTimer.Start();
         }
+
+
+
 
         private void LaunchDelayTimer_Tick(object sender, EventArgs e)
         {

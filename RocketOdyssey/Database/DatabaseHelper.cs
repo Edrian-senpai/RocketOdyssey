@@ -26,6 +26,7 @@ namespace RocketOdyssey.Database
                     Username            TEXT NOT NULL UNIQUE,
                     PasswordHash        TEXT NOT NULL,
                     Score               INTEGER DEFAULT 0,
+                    HighScore           INTEGER DEFAULT 0,
                     Coins               INTEGER DEFAULT 0,
                     RocketSpeed         INTEGER DEFAULT 0,
                     RocketArmor         INTEGER DEFAULT 100,
@@ -167,6 +168,41 @@ namespace RocketOdyssey.Database
             }
         }
 
+        // Get player's HighScore
+        public static int GetHighScore(string username)
+        {
+            using (var conn = GetConnection())
+            {
+                conn.Open();
+                string query = @"SELECT HighScore FROM Users WHERE Username = @username";
+                using (var cmd = new SQLiteCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@username", username);
+                    object result = cmd.ExecuteScalar();
+                    return result != null ? Convert.ToInt32(result) : 0;
+                }
+            }
+        }
+
+        // Update player's HighScore only if it's higher than existing
+        public static void UpdateHighScore(string username, int newScore)
+        {
+            int currentHigh = GetHighScore(username);
+            if (newScore > currentHigh)
+            {
+                using (var conn = GetConnection())
+                {
+                    conn.Open();
+                    string query = @"UPDATE Users SET HighScore = @highScore WHERE Username = @username";
+                    using (var cmd = new SQLiteCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@highScore", newScore);
+                        cmd.Parameters.AddWithValue("@username", username);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+        }
 
         // Get player's coin balance
         public static int GetPlayerCoins(string username)
