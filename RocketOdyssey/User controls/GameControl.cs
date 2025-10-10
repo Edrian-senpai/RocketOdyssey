@@ -180,7 +180,9 @@ namespace RocketOdyssey
             // ---- Input setup ----
             this.KeyDown += GameControl_KeyDown;
             this.KeyUp += GameControl_KeyUp;
-            
+            this.PreviewKeyDown += GameControl_PreviewKeyDown;
+
+
 
             this.SetStyle(ControlStyles.Selectable, true);
             this.TabStop = true;
@@ -387,6 +389,24 @@ namespace RocketOdyssey
             PlayerRocket.Invalidate();
         }
 
+        private void GameControl_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
+        {
+            // Ignore input during non-playable states
+            if (isPaused || controlsLocked || isOutOfFuel || fuel <= 0)
+                return;
+
+            // Treat arrow keys as input keys
+            switch (e.KeyCode)
+            {
+                case Keys.Up:
+                case Keys.Down:
+                case Keys.Left:
+                case Keys.Right:
+                    e.IsInputKey = true;
+                    break;
+            }
+        }
+
         private void OnFrameChanged(object sender, EventArgs e)
         {
             PlayerRocket.Invalidate();      // redraw each time a frame changes
@@ -525,9 +545,6 @@ namespace RocketOdyssey
             };
             countdownTimer.Start();
         }
-
-
-
 
         private void LaunchDelayTimer_Tick(object sender, EventArgs e)
         {

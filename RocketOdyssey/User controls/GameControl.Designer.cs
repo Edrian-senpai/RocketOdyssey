@@ -223,6 +223,7 @@
             this.PlayerRocket.TabIndex = 2;
             this.PlayerRocket.TabStop = false;
             this.PlayerRocket.WaitOnLoad = true;
+            this.PlayerRocket.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.GameControl_PreviewKeyDown);
             // 
             // GameControl
             // 
