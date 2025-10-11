@@ -928,7 +928,6 @@ namespace RocketOdyssey
             newGame.Focus();
         }
 
-
         private void OnMainMenuClicked()
         {
             // if countdown is active, save the remaining seconds
