@@ -133,9 +133,6 @@
   <data name="OuterSpace" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\OuterSpace.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="laser_beam_long" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\laser-beam_long.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="hidepass_icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\hidepass_icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -148,9 +145,6 @@
   <data name="Pause_Logo" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Pause_Logo1.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Atmosphere_long" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Atmoshphere_long.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="Register_Logo" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Register_Logo.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -162,12 +156,6 @@
   </data>
   <data name="Leaderboards_Logo" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Leaderboards_Logo.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Full_bg_final" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images&amp;Animations\Background\Full_bg_final.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="HomeBase_old" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images&amp;Animations\Background\HomeBase.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="HomeBase" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\HomeBase.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -204,5 +192,8 @@
   </data>
   <data name="Weapon_icon2" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Weapon_icon2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Atmosphere_long" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images&amp;Animations\Background\Atmosphere_long.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

@@ -53,7 +53,6 @@
             // panelBackground
             // 
             this.panelBackground.BackColor = System.Drawing.Color.Transparent;
-            this.panelBackground.BackgroundImage = global::RocketOdyssey.Properties.Resources.Full_bg_final;
             this.panelBackground.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.panelBackground.Controls.Add(this.pbWeapon_Logo);
             this.panelBackground.Controls.Add(this.pbWeapon);

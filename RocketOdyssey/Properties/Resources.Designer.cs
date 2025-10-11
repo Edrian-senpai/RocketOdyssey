@@ -103,16 +103,6 @@ namespace RocketOdyssey.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap Full_bg_final {
-            get {
-                object obj = ResourceManager.GetObject("Full_bg_final", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap Game_Logo {
             get {
                 object obj = ResourceManager.GetObject("Game_Logo", resourceCulture);
@@ -143,29 +133,9 @@ namespace RocketOdyssey.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap HomeBase_old {
-            get {
-                object obj = ResourceManager.GetObject("HomeBase_old", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap laser_beam {
             get {
                 object obj = ResourceManager.GetObject("laser_beam", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap laser_beam_long {
-            get {
-                object obj = ResourceManager.GetObject("laser_beam_long", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

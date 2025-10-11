@@ -342,7 +342,7 @@
             // RegisterForm
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Inherit;
-            this.BackgroundImage = global::RocketOdyssey.Properties.Resources.HomeBase_old;
+            this.BackgroundImage = global::RocketOdyssey.Properties.Resources.HomeBase;
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.ClientSize = new System.Drawing.Size(698, 664);
             this.Controls.Add(this.pnRegister);
