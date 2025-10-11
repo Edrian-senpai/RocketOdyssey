@@ -1,9 +1,12 @@
-﻿using RocketOdyssey.Database;
+﻿using NAudio.Wave;
+using RocketOdyssey.Database;
 using RocketOdyssey.User_controls;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
+
 using System.Windows.Forms;
 
 namespace RocketOdyssey
@@ -66,6 +69,11 @@ namespace RocketOdyssey
         private bool isOutOfFuel = false;
         private PauseOverlayControl pauseOverlay;
         private bool isPaused = false;
+
+        // === Laser Beam Music System ===
+        private WaveOutEvent laserOutput;
+        private AudioFileReader laserReader;
+        private LoopStream laserLoop;
 
         public GameControl()
         {
@@ -804,6 +812,9 @@ namespace RocketOdyssey
             laserActive = true;
             weaponCharged = false;
 
+            // === Play looping laser sound ===
+            PlayLaserSound();
+
             // === Duration based on weapon level ===
             laserDuration = rocketWeapon * 4; // level 1 = 5s, +5s each level (-1s adjustment)
             int totalDurationMs = laserDuration * 1000;
@@ -867,10 +878,112 @@ namespace RocketOdyssey
 
                     laserBeam.Visible = false;
                     laserActive = false;
+                    StopLaserSound();
                     laserSyncTimer.Stop();
                 }
             };
             laserSyncTimer.Start();
+        }
+
+        public class LoopStream : WaveStream
+        {
+            private readonly AudioFileReader sourceStream;
+            private bool isFirstLoop = true;
+            private const float FadeDurationSeconds = 0.15f; // duration of fade-in/out (adjust to taste)
+
+            private float[] fadeBuffer;
+            private int fadeSampleCount;
+
+            public LoopStream(AudioFileReader sourceStream)
+            {
+                this.sourceStream = sourceStream;
+                EnableLooping = true;
+
+                fadeSampleCount = (int)(sourceStream.WaveFormat.SampleRate * FadeDurationSeconds * sourceStream.WaveFormat.Channels);
+                fadeBuffer = new float[fadeSampleCount];
+            }
+
+            public bool EnableLooping { get; set; }
+
+            public override WaveFormat WaveFormat => sourceStream.WaveFormat;
+            public override long Length => sourceStream.Length;
+            public override long Position
+            {
+                get => sourceStream.Position;
+                set => sourceStream.Position = value;
+            }
+
+            public override int Read(byte[] buffer, int offset, int count)
+            {
+                int totalBytesRead = 0;
+
+                while (totalBytesRead < count)
+                {
+                    int bytesRead = sourceStream.Read(buffer, offset + totalBytesRead, count - totalBytesRead);
+
+                    if (bytesRead == 0)
+                    {
+                        if (!EnableLooping)
+                            break;
+
+                        // === Smooth transition ===
+                        ApplyFadeOut(buffer, offset, totalBytesRead);
+
+                        // loop back to start (or offset)
+                        sourceStream.Position = 0;
+
+
+                        sourceStream.CurrentTime = TimeSpan.FromSeconds(3.5);
+                        sourceStream.Flush();
+
+                        isFirstLoop = false;
+
+
+                        // Read beginning samples to fade in
+                        int fadeInBytes = sourceStream.Read(buffer, offset + totalBytesRead, count - totalBytesRead);
+                        ApplyFadeIn(buffer, offset + totalBytesRead, fadeInBytes);
+                        totalBytesRead += fadeInBytes;
+                        continue;
+                    }
+
+                    totalBytesRead += bytesRead;
+                }
+
+                return totalBytesRead;
+            }
+
+            // --- Apply fade-in on restart ---
+            private void ApplyFadeIn(byte[] buffer, int offset, int bytesRead)
+            {
+                int bytesPerSample = sourceStream.WaveFormat.BitsPerSample / 8;
+                int channels = sourceStream.WaveFormat.Channels;
+                int sampleCount = bytesRead / bytesPerSample;
+
+                for (int i = 0; i < sampleCount && i < fadeSampleCount; i++)
+                {
+                    float multiplier = (float)i / fadeSampleCount;
+                    float sample = BitConverter.ToSingle(buffer, offset + i * bytesPerSample);
+                    sample *= multiplier;
+                    Array.Copy(BitConverter.GetBytes(sample), 0, buffer, offset + i * bytesPerSample, bytesPerSample);
+                }
+            }
+
+            // --- Apply fade-out before looping ---
+            private void ApplyFadeOut(byte[] buffer, int offset, int bytesRead)
+            {
+                int bytesPerSample = sourceStream.WaveFormat.BitsPerSample / 8;
+                int channels = sourceStream.WaveFormat.Channels;
+                int sampleCount = bytesRead / bytesPerSample;
+
+                for (int i = 0; i < fadeSampleCount && i < sampleCount; i++)
+                {
+                    float multiplier = 1f - (float)i / fadeSampleCount;
+                    int byteIndex = offset + (sampleCount - i - 1) * bytesPerSample;
+                    float sample = BitConverter.ToSingle(buffer, byteIndex);
+                    sample *= multiplier;
+                    Array.Copy(BitConverter.GetBytes(sample), 0, buffer, byteIndex, bytesPerSample);
+                }
+            }
         }
 
         private void UpdateLaserPosition(PictureBox beam)
@@ -885,5 +998,71 @@ namespace RocketOdyssey
             beam.Height = beamHeight;
             beam.Location = new Point(rocketCenterX, 0);
         }
+
+        private void PlayLaserSound()
+        {
+            try
+            {
+                // Stop any existing playback
+                StopLaserSound();
+
+                // === Load sound from resources ===
+                string tempPath = Path.Combine(Path.GetTempPath(), "laser_loop.mp3");
+                File.WriteAllBytes(tempPath, GetResourceBytes(Properties.Resources.Laser_Sound));
+                // ^ Replace with your actual embedded sound resource (e.g., Laser_Loop)
+
+                laserReader = new AudioFileReader(tempPath);
+
+                // === Create looping stream with smooth transition and offset ===
+                laserLoop = new LoopStream(laserReader);
+                laserLoop.EnableLooping = true;
+
+                // === Start playback ===
+                laserOutput = new WaveOutEvent();
+                laserOutput.Init(laserLoop);
+                laserOutput.Play();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Laser sound error: {ex.Message}");
+            }
+        }
+
+        private void StopLaserSound()
+        {
+            try
+            {
+                if (laserOutput != null)
+                {
+                    laserOutput.Stop();
+                    laserOutput.Dispose();
+                    laserOutput = null;
+                }
+
+                if (laserReader != null)
+                {
+                    laserReader.Dispose();
+                    laserReader = null;
+                }
+
+                if (laserLoop != null)
+                {
+                    laserLoop.Dispose();
+                    laserLoop = null;
+                }
+            }
+            catch { /* ignore errors on stop */ }
+        }
+
+        // === Helper: Convert resource to byte array ===
+        private byte[] GetResourceBytes(UnmanagedMemoryStream stream)
+        {
+            using (var ms = new MemoryStream())
+            {
+                stream.CopyTo(ms);
+                return ms.ToArray();
+            }
+        }
+
     }
 }
