@@ -37,11 +37,11 @@
             this.lblCoins = new CuoreUI.Controls.cuiLabel();
             this.lblScore = new CuoreUI.Controls.cuiLabel();
             this.pbHP_Logo = new System.Windows.Forms.PictureBox();
-            this.pbHP = new CuoreUI.Controls.cuiProgressBarHorizontal();
             this.pbFuel_Logo = new System.Windows.Forms.PictureBox();
             this.pbFuel = new CuoreUI.Controls.cuiProgressBarHorizontal();
             this.PlayerRocket = new System.Windows.Forms.PictureBox();
             this.lblHP1 = new CuoreUI.Controls.cuiLabel();
+            this.pbHP = new CuoreUI.Controls.cuiProgressBarHorizontal();
             this.panelBackground.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbWeapon_Logo)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbCoin_Logo)).BeginInit();
@@ -196,21 +196,6 @@
             this.pbHP_Logo.TabStop = false;
             this.pbHP_Logo.WaitOnLoad = true;
             // 
-            // pbHP
-            // 
-            this.pbHP.Background = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-            this.pbHP.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.pbHP.Flipped = false;
-            this.pbHP.Foreground = System.Drawing.Color.ForestGreen;
-            this.pbHP.Location = new System.Drawing.Point(62, 48);
-            this.pbHP.MaxValue = 100;
-            this.pbHP.Name = "pbHP";
-            this.pbHP.Rounding = 8;
-            this.pbHP.Size = new System.Drawing.Size(125, 30);
-            this.pbHP.TabIndex = 19;
-            this.pbHP.TabStop = false;
-            this.pbHP.Value = 90;
-            // 
             // pbFuel_Logo
             // 
             this.pbFuel_Logo.BackColor = System.Drawing.Color.Transparent;
@@ -274,6 +259,21 @@
             this.lblHP1.TabStop = false;
             this.lblHP1.VerticalAlignment = System.Drawing.StringAlignment.Near;
             // 
+            // pbHP
+            // 
+            this.pbHP.Background = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            this.pbHP.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.pbHP.Flipped = false;
+            this.pbHP.Foreground = System.Drawing.Color.ForestGreen;
+            this.pbHP.Location = new System.Drawing.Point(62, 48);
+            this.pbHP.MaxValue = 100;
+            this.pbHP.Name = "pbHP";
+            this.pbHP.Rounding = 8;
+            this.pbHP.Size = new System.Drawing.Size(125, 30);
+            this.pbHP.TabIndex = 19;
+            this.pbHP.TabStop = false;
+            this.pbHP.Value = 90;
+            // 
             // GameControl
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Inherit;
@@ -283,7 +283,6 @@
             this.DoubleBuffered = true;
             this.Name = "GameControl";
             this.Size = new System.Drawing.Size(720, 720);
-            this.Load += new System.EventHandler(this.GameControl_Load);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.GameControl_KeyDown);
             this.panelBackground.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pbWeapon_Logo)).EndInit();

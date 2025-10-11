@@ -59,6 +59,21 @@ namespace RocketOdyssey.Database
                 {
                     cmd.ExecuteNonQuery();
                 }
+
+                // === Sound State Table ===
+                string createSoundStateTable = @"
+                CREATE TABLE IF NOT EXISTS SoundState (
+                    Username TEXT PRIMARY KEY,
+                    BgMusicTime REAL DEFAULT 0,
+                    LaserActive INTEGER DEFAULT 0,
+                    LaserTimeLeft REAL DEFAULT 0,
+                    FOREIGN KEY (Username) REFERENCES Users(Username)
+                );";
+                using (var cmd = new SQLiteCommand(createSoundStateTable, conn))
+                {
+                    cmd.ExecuteNonQuery();
+                }
+
             }
         }
 
@@ -449,5 +464,72 @@ namespace RocketOdyssey.Database
                 }
             }
         }
+
+        // === SOUND STATE HANDLING ===
+
+        public static void SaveSoundState(string username, double bgMusicTime, bool laserActive, double laserTimeLeft)
+        {
+            using (var conn = GetConnection())
+            {
+                conn.Open();
+                string query = @"
+            INSERT INTO SoundState (Username, BgMusicTime, LaserActive, LaserTimeLeft)
+            VALUES (@u, @bg, @la, @lt)
+            ON CONFLICT(Username)
+            DO UPDATE SET 
+                BgMusicTime = excluded.BgMusicTime,
+                LaserActive = excluded.LaserActive,
+                LaserTimeLeft = excluded.LaserTimeLeft;";
+                using (var cmd = new SQLiteCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@u", username);
+                    cmd.Parameters.AddWithValue("@bg", bgMusicTime);
+                    cmd.Parameters.AddWithValue("@la", laserActive ? 1 : 0);
+                    cmd.Parameters.AddWithValue("@lt", laserTimeLeft);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        public static (double bgMusicTime, bool laserActive, double laserTimeLeft) LoadSoundState(string username)
+        {
+            using (var conn = GetConnection())
+            {
+                conn.Open();
+                string query = @"SELECT BgMusicTime, LaserActive, LaserTimeLeft FROM SoundState WHERE Username = @u";
+                using (var cmd = new SQLiteCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@u", username);
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            double bg = Convert.ToDouble(reader["BgMusicTime"]);
+                            bool laser = Convert.ToInt32(reader["LaserActive"]) == 1;
+                            double timeLeft = Convert.ToDouble(reader["LaserTimeLeft"]);
+                            return (bg, laser, timeLeft);
+                        }
+                    }
+                }
+            }
+            return (0, false, 0);
+        }
+
+        public static bool HasSoundState(string username)
+        {
+            using (var conn = GetConnection())
+            {
+                conn.Open();
+                string query = "SELECT COUNT(*) FROM SoundState WHERE Username = @u";
+                using (var cmd = new SQLiteCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@u", username);
+                    long count = (long)cmd.ExecuteScalar();
+                    return count > 0;
+                }
+            }
+        }
+
+
     }
 }

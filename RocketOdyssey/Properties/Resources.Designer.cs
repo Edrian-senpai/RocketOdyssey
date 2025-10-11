@@ -101,33 +101,6 @@ namespace RocketOdyssey.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
-        /// </summary>
-        internal static System.IO.UnmanagedMemoryStream bg_music_game {
-            get {
-                return ResourceManager.GetStream("bg_music_game", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
-        /// </summary>
-        internal static System.IO.UnmanagedMemoryStream bg_music_menu {
-            get {
-                return ResourceManager.GetStream("bg_music_menu", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
-        /// </summary>
-        internal static System.IO.UnmanagedMemoryStream Explosion {
-            get {
-                return ResourceManager.GetStream("Explosion", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
         internal static System.Drawing.Bitmap Game_Logo {
@@ -164,15 +137,6 @@ namespace RocketOdyssey.Properties {
             get {
                 object obj = ResourceManager.GetObject("laser_beam", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
-        /// </summary>
-        internal static System.IO.UnmanagedMemoryStream Laser_Sound {
-            get {
-                return ResourceManager.GetStream("Laser_Sound", resourceCulture);
             }
         }
         

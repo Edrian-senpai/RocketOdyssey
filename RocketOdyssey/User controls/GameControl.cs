@@ -69,16 +69,31 @@ namespace RocketOdyssey
         private bool isOutOfFuel = false;
         private PauseOverlayControl pauseOverlay;
         private bool isPaused = false;
+        private Timer laserTimer;
+        private Timer laserFollowTimer;
+        private Timer laserSyncTimer;
 
         // === Laser Beam Music System ===
         private WaveOutEvent laserOutput;
-        private AudioFileReader laserReader;
+        private WaveFileReader laserReader;
         private LoopStream laserLoop;
+
+        // === Background Music System ===
+        private WaveOutEvent bgOutput;
+        private AudioFileReader bgReader;
+        private bool bgMusicPlaying = false;
+        private double bgMusicTime = 0;
+        private double laserTimeLeft = 0;
+
+        private bool focusRecoveryEnabled = true;
 
         public GameControl()
         {
             InitializeComponent();
             InitializeBackgrounds();
+            // Ensure GameControl regains focus when any label/panel is clicked
+            EnableAutomaticFocusRecovery();
+
 
             currentUser = SessionManager.CurrentUsername;
 
@@ -167,6 +182,50 @@ namespace RocketOdyssey
                 launchDelayTimer.Interval = 1000;
                 launchDelayTimer.Tick += LaunchDelayTimer_Tick;
                 launchDelayTimer.Start();
+            }
+
+            // ---- Load sound state ----
+
+            var (savedBgTime, savedLaserActive, savedLaserTimeLeft) = DatabaseHelper.LoadSoundState(currentUser);
+
+            bgMusicTime = savedBgTime;
+            laserTimeLeft = savedLaserTimeLeft;
+
+            StartBackgroundMusic();
+
+            // === Restore Laser Charge UI ===
+            if (savedLaserTimeLeft > 0 && savedLaserTimeLeft <= rocketWeapon * 4)
+            {
+                // Continue from saved charge
+                laserTimeLeft = savedLaserTimeLeft;
+                double progress = savedLaserTimeLeft / (rocketWeapon * 4.0);
+                pbWeapon.Value = (int)(pbWeapon.MaxValue * progress);
+            }
+            else if (savedLaserTimeLeft == 0 && DatabaseHelper.HasSoundState(currentUser))
+            {
+                // Saved record exists but laser was empty — keep it empty
+                laserTimeLeft = 0;
+                pbWeapon.Value = 0;
+            }
+            else
+            {
+                // No record found yet — default to full
+                laserTimeLeft = rocketWeapon * 4;
+                pbWeapon.Value = pbWeapon.MaxValue;
+            }
+
+            // === Set weapon charge flag based on saved state ===
+            weaponCharged = (laserTimeLeft > 0);
+
+            // Resume from saved time
+            if (bgReader != null && savedBgTime > 0)
+                bgReader.CurrentTime = TimeSpan.FromSeconds(savedBgTime);
+
+            // If laser was active before leaving, resume it
+            if (savedLaserActive && savedLaserTimeLeft > 0)
+            {
+                ActivateLaser();
+                laserTimeLeft = savedLaserTimeLeft;
             }
 
             // ---- Background setup ----
@@ -300,10 +359,14 @@ namespace RocketOdyssey
 
         private void ScrollTimer_Tick(object sender, EventArgs e)
         {
+            if (isPaused) return;
+
             if (backgroundStages == null || backgroundStages.Count == 0)
                 return;
 
             currentStageOffset += scrollSpeed;
+           if (!bgMusicPlaying)
+                StartBackgroundMusic();
 
             var (currentImg, _) = backgroundStages[currentStageIndex];
             float scale = (float)panelBackground.Width / currentImg.Width;
@@ -329,6 +392,7 @@ namespace RocketOdyssey
                 {
                     currentStageOffset = lastScaledHeight - panelBackground.Height;
                     scrollTimer.Stop();
+                    StopBackgroundMusic(); // <--- stop when scrolling reaches top
                 }
             }
 
@@ -538,6 +602,8 @@ namespace RocketOdyssey
         // ----------------------------------------
         private void MoveTimer_Tick(object sender, EventArgs e)
         {
+            if (isPaused) return;
+
             int newX = PlayerRocket.Location.X;
             int newY = PlayerRocket.Location.Y;
 
@@ -561,6 +627,8 @@ namespace RocketOdyssey
         // ----------------------------------------
         private void FuelTimer_Tick(object sender, EventArgs e)
         {
+            if (isPaused) return;
+
             if (isOutOfFuel) return;
 
             if (fuel > 0)
@@ -597,6 +665,18 @@ namespace RocketOdyssey
                     countdownTimer.Stop();
                     scrollTimer.Stop();
 
+                    // 🔹 Stop all sounds before going back
+                    StopAllSounds();
+
+                    // 🔹 Reset background music timeline
+                    bgMusicTime = 0;
+                    DatabaseHelper.SaveSoundState(
+                        currentUser,
+                        bgMusicTime: 0,
+                        laserActive: false,
+                        laserTimeLeft: 0
+                    );
+
                     MessageBox.Show("Out of fuel! Game Over.");
 
                     DatabaseHelper.UpdateHighScore(currentUser, score);
@@ -611,10 +691,17 @@ namespace RocketOdyssey
 
                     DatabaseHelper.SavePlayerFuel(currentUser, fuel);
                     DatabaseHelper.SavePlayerHP(currentUser, hp);
-                    DatabaseHelper.SavePlayerState(currentUser, PlayerRocket.Location.X, PlayerRocket.Location.Y, currentStageIndex, currentStageOffset);
+                    DatabaseHelper.SavePlayerState(
+                        currentUser,
+                        PlayerRocket.Location.X,
+                        PlayerRocket.Location.Y,
+                        currentStageIndex,
+                        currentStageOffset
+                    );
                     DatabaseHelper.SaveLaunchTimer(currentUser, launchCountdown);
                     DatabaseHelper.UpdateUpgrade(currentUser, "Score", score);
 
+                    // 🔹 Return to main menu (fresh state, fresh music)
                     MainMenuControl menu = new MainMenuControl();
                     GameForm parentForm = (GameForm)this.FindForm();
                     parentForm.Controls.Clear();
@@ -623,6 +710,7 @@ namespace RocketOdyssey
             };
             countdownTimer.Start();
         }
+
 
         // ----------------------------------------
         //   Launch Timer
@@ -662,17 +750,77 @@ namespace RocketOdyssey
             DatabaseHelper.UpdateHighScore(currentUser, score);
         }
 
-        private void GameControl_Load(object sender, EventArgs e)
+        // Call this once from the constructor AFTER InitializeComponent()
+        private void EnableAutomaticFocusRecovery()
         {
-            this.SetStyle(ControlStyles.Selectable, true);
-            this.TabStop = true;
-            this.Focus();
+            // Attach to any existing children
+            AttachFocusHandlersRecursively(this);
+
+            // Re-attach when controls are added later at runtime
+            this.ControlAdded += (s, e) => AttachFocusHandlersRecursively(e.Control);
         }
 
-        private void GameControl_Enter(object sender, EventArgs e)
+        private void AttachFocusHandlersRecursively(Control root)
         {
-            this.Focus();
+            // If root is a container, attach for each child (including the root itself optionally)
+            AttachHandlers(root);
+
+            foreach (Control child in root.Controls)
+            {
+                AttachFocusHandlersRecursively(child);
+            }
         }
+
+        private void AttachHandlers(Control ctrl)
+        {
+            // Avoid attaching multiple times
+            // (store a flag in Tag or use an extension; simplest: remove handlers first to avoid duplicates)
+            ctrl.MouseDown -= ChildControl_RequestGameFocus;
+            ctrl.MouseDown += ChildControl_RequestGameFocus;
+
+            ctrl.Click -= ChildControl_RequestGameFocus;
+            ctrl.Click += ChildControl_RequestGameFocus;
+
+            // If control can receive focus and gets focus via keyboard, redirect it
+            ctrl.GotFocus -= ChildControl_RequestGameFocus;
+            ctrl.GotFocus += ChildControl_RequestGameFocus;
+        }
+
+        private void ChildControl_RequestGameFocus(object sender, EventArgs e)
+        {
+            if (!focusRecoveryEnabled) return;
+            try
+            {
+                var f = this.FindForm();
+                if (f != null)
+                {
+                    // Skip focus recovery if the form isn't active (e.g., MessageBox or modal dialog open)
+                    if (!f.Focused && !f.ContainsFocus)
+                        return;
+                }
+
+                // Safe to take focus back now
+                this.Select();
+                this.Focus();
+
+                if (f != null)
+                {
+                    try
+                    {
+                        f.ActiveControl = this;
+                    }
+                    catch
+                    {
+                        // ignore invalid focus set attempts
+                    }
+                }
+            }
+            catch
+            {
+                // ignore exceptions
+            }
+        }
+
 
         // ----------------------------------------
         //   Pause Menu Handling
@@ -683,12 +831,13 @@ namespace RocketOdyssey
             if (isPaused) return;
 
             // Stop game timers
-            moveTimer.Stop();
-            scrollTimer.Stop();
-            fuelTimer.Stop();
-            launchDelayTimer?.Stop();
-            controlsLocked = true;
-            isPaused = true;
+            SetGamePaused(true);
+
+            focusRecoveryEnabled = false; // when opening a modal or overlay
+
+            // pause audio
+            bgOutput?.Pause();
+            laserOutput?.Pause();
 
             // Create PauseOverlayControl with size 700x700
             pauseOverlay = new PauseOverlayControl
@@ -723,26 +872,9 @@ namespace RocketOdyssey
             pauseOverlay.Dispose();
             pauseOverlay = null;
 
-            // reset movement keys
-            upPressed = false;
-            downPressed = false;
-            leftPressed = false;
-            rightPressed = false;
+            SetGamePaused(false);
 
-            // reset rocket sprite & rotation
-            currentRocketSprite = idleGif;
-            currentRotation = 0f;
-            PlayerRocket.Invalidate();
-
-            // restore focus
-            this.Select();
-            this.Focus();
-            this.TabStop = true;
-
-            // restart normal game timers
-            moveTimer.Start();
-            scrollTimer.Start();
-            fuelTimer.Start();
+            focusRecoveryEnabled = true;  // when closing it
 
             // Resume countdown only if it's still active
             if (launchCountdown > 0)
@@ -765,15 +897,28 @@ namespace RocketOdyssey
             pauseOverlay.Dispose();
             pauseOverlay = null;
 
+            // stop both bg and laser
+            StopAllSounds();
+
+            // 🔹 Reset music timeline to 0 before starting a new game
+            bgMusicTime = 0;
+            DatabaseHelper.SaveSoundState(
+                currentUser,
+                bgMusicTime: 0,
+                laserActive: false,
+                laserTimeLeft: 0
+            );
+
             // reset player progress in DB before starting a new game
             DatabaseHelper.ResetPlayerProgress(currentUser);
 
-            // start new game
+            // start new game (fresh music and all)
             GameControl newGame = new GameControl();
             GameForm parentForm = (GameForm)this.FindForm();
             parentForm.Controls.Clear();
             parentForm.Controls.Add(newGame);
         }
+
 
         private void OnMainMenuClicked()
         {
@@ -784,6 +929,18 @@ namespace RocketOdyssey
                 DatabaseHelper.SaveLaunchTimer(currentUser, launchCountdown);
             }
 
+            // Save sound state before leaving or pausing
+            if (bgReader != null)
+                bgMusicTime = bgReader.CurrentTime.TotalSeconds;
+
+            DatabaseHelper.SaveSoundState(
+                currentUser,
+                bgMusicTime,
+                laserActive,
+                laserTimeLeft
+            );
+
+            StopAllSounds(); // stop both bg and laser
             SavePlayerProgress(); // also saves fuel, hp, etc.
 
             // back to menu
@@ -792,6 +949,91 @@ namespace RocketOdyssey
             parentForm.Controls.Clear();
             parentForm.Controls.Add(menu);
         }
+        private void SetGamePaused(bool pause)
+        {
+            isPaused = pause;
+            controlsLocked = pause;
+
+            if (pause)
+            {
+                // --- Stop all timers ---
+                moveTimer?.Stop();
+                scrollTimer?.Stop();
+                fuelTimer?.Stop();
+                launchDelayTimer?.Stop();
+                laserTimer?.Stop();
+                laserFollowTimer?.Stop();
+                laserSyncTimer?.Stop();
+
+                // --- Pause audio ---
+                bgOutput?.Pause();
+                laserOutput?.Pause();
+
+                // --- 🔹 Immediately save sound state when pausing ---
+                try
+                {
+                    double bgMusicTime = bgReader?.CurrentTime.TotalSeconds ?? 0;
+                    DatabaseHelper.SaveSoundState(
+                        currentUser,
+                        bgMusicTime,
+                        laserActive,
+                        laserTimeLeft
+                    );
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Failed to save sound state on pause: " + ex.Message);
+                }
+            }
+            else
+            {
+                // --- Resume focus ---
+                this.Select();
+                this.Focus();
+                this.TabStop = true;
+
+                upPressed = false;
+                downPressed = false;
+                leftPressed = false;
+                rightPressed = false;
+
+                // --- Resume timers ---
+                moveTimer?.Start();
+                scrollTimer?.Start();
+                fuelTimer?.Start();
+
+                if (launchCountdown > 0)
+                    launchDelayTimer?.Start();
+
+                if (laserActive)
+                    laserTimer?.Start();
+                laserFollowTimer?.Start();
+                laserSyncTimer?.Start();
+
+                // --- Resume audio ---
+                bgOutput?.Play();
+                if (laserActive)
+                    laserOutput?.Play();
+
+                // --- 🔹 Restore laserTimeLeft from DB if available ---
+                try
+                {
+                    var soundState = DatabaseHelper.LoadSoundState(currentUser);
+                    if (soundState.laserActive && soundState.laserTimeLeft > 0)
+                    {
+                        laserTimeLeft = soundState.laserTimeLeft;
+                        // Optionally: re-sync laser duration here if needed
+                    }
+
+                    if (bgReader != null && soundState.bgMusicTime > 0)
+                        bgReader.CurrentTime = TimeSpan.FromSeconds(soundState.bgMusicTime);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Failed to load sound state on resume: " + ex.Message);
+                }
+            }
+        }
 
         // ----------------------------------------
         //   WEAPON SYSTEM
@@ -799,15 +1041,49 @@ namespace RocketOdyssey
 
         private void ChargeWeapon()
         {
+            // Prevent charging if the weapon bar is not empty
+            if (pbWeapon.Value > 0)
+            {
+                return;
+            }
+
+            // Only allow charging when empty
             weaponCharged = true;
             pbWeapon.Value = pbWeapon.MaxValue;
+
+            // Compute the max laser time based on the current weapon level
+            laserDuration = rocketWeapon * 4;
+            laserTimeLeft = laserDuration;
+
+            // Immediately save this full charge to the DB
+            DatabaseHelper.SaveSoundState(
+                currentUser,
+                bgMusicTime: bgReader?.CurrentTime.TotalSeconds ?? 0,
+                laserActive: false,
+                laserTimeLeft: laserTimeLeft
+            );
 
             MessageBox.Show("Weapon charged!");
         }
 
+
         private void ActivateLaser()
         {
             if (rocketWeapon <= 0) return; // Weapon not unlocked
+
+            // --- Initialize laser state ---
+            laserDuration = rocketWeapon * 4; // seconds total
+
+            if (laserTimeLeft <= 0 || laserTimeLeft > laserDuration)
+            {
+                // Only reset if there's truly no saved value
+                laserTimeLeft = laserDuration;
+            }
+            else
+            {
+                // Continue from saved charge
+                pbWeapon.Value = (int)(pbWeapon.MaxValue * (laserTimeLeft / (double)laserDuration));
+            }
 
             laserActive = true;
             weaponCharged = false;
@@ -815,11 +1091,11 @@ namespace RocketOdyssey
             // === Play looping laser sound ===
             PlayLaserSound();
 
-            // === Duration based on weapon level ===
-            laserDuration = rocketWeapon * 4; // level 1 = 5s, +5s each level (-1s adjustment)
             int totalDurationMs = laserDuration * 1000;
             int updateInterval = 50; // 20fps
-            int elapsed = 0;
+
+            // Compute elapsed time from saved remaining seconds
+            int elapsed = (int)((laserDuration - laserTimeLeft) * 1000);
 
             // --- Create laser beam sprite if not already ---
             if (laserBeam == null)
@@ -840,13 +1116,40 @@ namespace RocketOdyssey
             }
 
             laserBeam.Visible = true;
+
+            // === Use persistent timer ===
+            laserTimer?.Stop();
+            laserTimer?.Dispose();
+
+            laserTimer = new Timer { Interval = updateInterval };
+            laserTimer.Tick += (s, e) =>
+            {
+                if (isPaused) return;
+
+                elapsed += updateInterval;
+                laserTimeLeft = Math.Max(0, laserDuration - (elapsed / 1000.0));
+
+                if (elapsed >= totalDurationMs)
+                {
+                    laserTimer.Stop();
+                    laserBeam.Visible = false;
+                    laserActive = false;
+                    StopLaserSound();
+                    pbWeapon.Value = 0;
+                    laserTimeLeft = 0;
+                    DatabaseHelper.SaveSoundState(currentUser, bgMusicTime: 0, laserActive: false, laserTimeLeft: 0);
+                }
+            };
+            laserTimer.Start();
+
             UpdateLaserPosition(laserBeam);
 
             // --- Follow rocket fast ---
-            Timer laserFollowTimer = new Timer();
-            laserFollowTimer.Interval = 10;
+            laserFollowTimer?.Stop();
+            laserFollowTimer = new Timer { Interval = 10 };
             laserFollowTimer.Tick += (s, e) =>
             {
+                if (isPaused) return;
                 if (!laserActive)
                 {
                     laserFollowTimer.Stop();
@@ -857,20 +1160,19 @@ namespace RocketOdyssey
             laserFollowTimer.Start();
 
             // --- Unified Timer for both beam & bar ---
-            Timer laserSyncTimer = new Timer();
-            laserSyncTimer.Interval = updateInterval;
+            laserSyncTimer?.Stop();
+            laserSyncTimer = new Timer { Interval = updateInterval };
             laserSyncTimer.Tick += (s, e) =>
             {
+                if (isPaused) return;
+
                 elapsed += updateInterval;
+                laserTimeLeft = Math.Max(0, laserDuration - (elapsed / 1000.0));
 
-                // Progress ratio (0 → 1)
                 double progress = Math.Min(1.0, (double)elapsed / totalDurationMs);
-
-                // --- Progress bar drain ---
                 pbWeapon.Value = (int)(pbWeapon.MaxValue * (1 - progress));
                 pbWeapon.Refresh();
 
-                // --- End laser exactly when bar hits 0 ---
                 if (progress >= 1.0)
                 {
                     pbWeapon.Value = 0;
@@ -880,23 +1182,26 @@ namespace RocketOdyssey
                     laserActive = false;
                     StopLaserSound();
                     laserSyncTimer.Stop();
+                    laserFollowTimer.Stop();
+                    laserTimer.Stop();
+                    laserTimeLeft = 0;
                 }
             };
             laserSyncTimer.Start();
         }
 
+
         public class LoopStream : WaveStream
         {
-            private readonly AudioFileReader sourceStream;
-            private bool isFirstLoop = true;
-            private const float FadeDurationSeconds = 0.15f; // duration of fade-in/out (adjust to taste)
+            private readonly WaveStream sourceStream;
+            private const float FadeDurationSeconds = 0.15f; // duration of fade-in/out (adjust as desired)
 
-            private float[] fadeBuffer;
-            private int fadeSampleCount;
+            private readonly float[] fadeBuffer;
+            private readonly int fadeSampleCount;
 
-            public LoopStream(AudioFileReader sourceStream)
+            public LoopStream(WaveStream sourceStream)
             {
-                this.sourceStream = sourceStream;
+                this.sourceStream = sourceStream ?? throw new ArgumentNullException(nameof(sourceStream));
                 EnableLooping = true;
 
                 fadeSampleCount = (int)(sourceStream.WaveFormat.SampleRate * FadeDurationSeconds * sourceStream.WaveFormat.Channels);
@@ -907,6 +1212,7 @@ namespace RocketOdyssey
 
             public override WaveFormat WaveFormat => sourceStream.WaveFormat;
             public override long Length => sourceStream.Length;
+
             public override long Position
             {
                 get => sourceStream.Position;
@@ -929,19 +1235,17 @@ namespace RocketOdyssey
                         // === Smooth transition ===
                         ApplyFadeOut(buffer, offset, totalBytesRead);
 
-                        // loop back to start (or offset)
+                        // loop back to start
                         sourceStream.Position = 0;
 
+                        // optional: skip ahead to prevent harsh start (you can remove this)
+                        if (sourceStream is AudioFileReader afr)
+                            afr.CurrentTime = TimeSpan.FromSeconds(3.5);
 
-                        sourceStream.CurrentTime = TimeSpan.FromSeconds(3.5);
-                        sourceStream.Flush();
-
-                        isFirstLoop = false;
-
-
-                        // Read beginning samples to fade in
+                        // === Fade in on restart ===
                         int fadeInBytes = sourceStream.Read(buffer, offset + totalBytesRead, count - totalBytesRead);
                         ApplyFadeIn(buffer, offset + totalBytesRead, fadeInBytes);
+
                         totalBytesRead += fadeInBytes;
                         continue;
                     }
@@ -952,36 +1256,56 @@ namespace RocketOdyssey
                 return totalBytesRead;
             }
 
-            // --- Apply fade-in on restart ---
             private void ApplyFadeIn(byte[] buffer, int offset, int bytesRead)
             {
                 int bytesPerSample = sourceStream.WaveFormat.BitsPerSample / 8;
-                int channels = sourceStream.WaveFormat.Channels;
                 int sampleCount = bytesRead / bytesPerSample;
 
                 for (int i = 0; i < sampleCount && i < fadeSampleCount; i++)
                 {
                     float multiplier = (float)i / fadeSampleCount;
-                    float sample = BitConverter.ToSingle(buffer, offset + i * bytesPerSample);
-                    sample *= multiplier;
-                    Array.Copy(BitConverter.GetBytes(sample), 0, buffer, offset + i * bytesPerSample, bytesPerSample);
+
+                    if (sourceStream.WaveFormat.BitsPerSample == 16)
+                    {
+                        short sample = BitConverter.ToInt16(buffer, offset + i * bytesPerSample);
+                        float floatSample = sample / 32768f;
+                        floatSample *= multiplier;
+                        short newSample = (short)(floatSample * 32768f);
+                        Array.Copy(BitConverter.GetBytes(newSample), 0, buffer, offset + i * bytesPerSample, bytesPerSample);
+                    }
+                    else if (sourceStream.WaveFormat.BitsPerSample == 32)
+                    {
+                        float sample = BitConverter.ToSingle(buffer, offset + i * bytesPerSample);
+                        sample *= multiplier;
+                        Array.Copy(BitConverter.GetBytes(sample), 0, buffer, offset + i * bytesPerSample, bytesPerSample);
+                    }
                 }
             }
 
-            // --- Apply fade-out before looping ---
             private void ApplyFadeOut(byte[] buffer, int offset, int bytesRead)
             {
                 int bytesPerSample = sourceStream.WaveFormat.BitsPerSample / 8;
-                int channels = sourceStream.WaveFormat.Channels;
                 int sampleCount = bytesRead / bytesPerSample;
 
                 for (int i = 0; i < fadeSampleCount && i < sampleCount; i++)
                 {
                     float multiplier = 1f - (float)i / fadeSampleCount;
                     int byteIndex = offset + (sampleCount - i - 1) * bytesPerSample;
-                    float sample = BitConverter.ToSingle(buffer, byteIndex);
-                    sample *= multiplier;
-                    Array.Copy(BitConverter.GetBytes(sample), 0, buffer, byteIndex, bytesPerSample);
+
+                    if (sourceStream.WaveFormat.BitsPerSample == 16)
+                    {
+                        short sample = BitConverter.ToInt16(buffer, byteIndex);
+                        float floatSample = sample / 32768f;
+                        floatSample *= multiplier;
+                        short newSample = (short)(floatSample * 32768f);
+                        Array.Copy(BitConverter.GetBytes(newSample), 0, buffer, byteIndex, bytesPerSample);
+                    }
+                    else if (sourceStream.WaveFormat.BitsPerSample == 32)
+                    {
+                        float sample = BitConverter.ToSingle(buffer, byteIndex);
+                        sample *= multiplier;
+                        Array.Copy(BitConverter.GetBytes(sample), 0, buffer, byteIndex, bytesPerSample);
+                    }
                 }
             }
         }
@@ -999,28 +1323,42 @@ namespace RocketOdyssey
             beam.Location = new Point(rocketCenterX, 0);
         }
 
+        // ----------------------------------------
+        //   SOUND MANAGEMENT
+        // ----------------------------------------
+
         private void PlayLaserSound()
         {
             try
             {
-                // Stop any existing playback
-                StopLaserSound();
+                StopLaserSound(); // Stop any existing playback
 
-                // === Load sound from resources ===
-                string tempPath = Path.Combine(Path.GetTempPath(), "laser_loop.mp3");
-                File.WriteAllBytes(tempPath, GetResourceBytes(Properties.Resources.Laser_Sound));
-                // ^ Replace with your actual embedded sound resource (e.g., Laser_Loop)
+                // === Locate external laser sound file ===
+                string laserPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory,
+                    "Images&Animations", "sfx", "Laser_Sound.wav");
 
-                laserReader = new AudioFileReader(tempPath);
+                if (!File.Exists(laserPath))
+                {
+                    MessageBox.Show("Laser sound file not found:\n" + laserPath);
+                    return;
+                }
 
-                // === Create looping stream with smooth transition and offset ===
-                laserLoop = new LoopStream(laserReader);
-                laserLoop.EnableLooping = true;
+                // === Read WAV file ===
+                var waveReader = new WaveFileReader(laserPath);
+
+                // === Create looping stream with smooth transition ===
+                laserLoop = new LoopStream(waveReader)
+                {
+                    EnableLooping = true
+                };
 
                 // === Start playback ===
                 laserOutput = new WaveOutEvent();
                 laserOutput.Init(laserLoop);
                 laserOutput.Play();
+
+                // Keep references alive
+                laserReader = waveReader;
             }
             catch (Exception ex)
             {
@@ -1028,10 +1366,86 @@ namespace RocketOdyssey
             }
         }
 
+
         private void StopLaserSound()
         {
             try
             {
+                laserOutput?.Stop();
+                laserOutput?.Dispose();
+                laserOutput = null;
+
+                laserLoop?.Dispose();
+                laserLoop = null;
+
+                laserReader?.Dispose();
+                laserReader = null;
+            }
+            catch { }
+        }
+
+        private void StartBackgroundMusic()
+        {
+            try
+            {
+                if (bgMusicPlaying) return;
+
+                string bgPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory,
+                    "Images&Animations", "sfx", "bg_music_game.wav");
+
+                if (!File.Exists(bgPath))
+                {
+                    MessageBox.Show("Background music file not found:\n" + bgPath);
+                    return;
+                }
+
+                bgReader = new AudioFileReader(bgPath);
+                bgOutput = new WaveOutEvent();
+                bgOutput.Init(bgReader);
+                bgOutput.Play();
+                bgMusicPlaying = true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error playing background music: " + ex.Message);
+            }
+        }
+
+        private void StopBackgroundMusic()
+        {
+            try
+            {
+                bgOutput?.Stop();
+                bgOutput?.Dispose();
+                bgOutput = null;
+
+                bgReader?.Dispose();
+                bgReader = null;
+
+                bgMusicPlaying = false;
+            }
+            catch { }
+        }
+
+
+
+        private void StopAllSounds()
+        {
+            try
+            {
+                if (bgOutput != null)
+                {
+                    bgOutput.Stop();
+                    bgOutput.Dispose();
+                    bgOutput = null;
+                }
+
+                if (bgReader != null)
+                {
+                    bgReader.Dispose();
+                    bgReader = null;
+                }
+
                 if (laserOutput != null)
                 {
                     laserOutput.Stop();
@@ -1045,23 +1459,9 @@ namespace RocketOdyssey
                     laserReader = null;
                 }
 
-                if (laserLoop != null)
-                {
-                    laserLoop.Dispose();
-                    laserLoop = null;
-                }
+                bgMusicPlaying = false;
             }
-            catch { /* ignore errors on stop */ }
-        }
-
-        // === Helper: Convert resource to byte array ===
-        private byte[] GetResourceBytes(UnmanagedMemoryStream stream)
-        {
-            using (var ms = new MemoryStream())
-            {
-                stream.CopyTo(ms);
-                return ms.ToArray();
-            }
+            catch { /* Ignore disposal errors */ }
         }
 
     }
