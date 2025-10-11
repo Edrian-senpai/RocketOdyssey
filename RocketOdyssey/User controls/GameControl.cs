@@ -94,7 +94,6 @@ namespace RocketOdyssey
             // Ensure GameControl regains focus when any label/panel is clicked
             EnableAutomaticFocusRecovery();
 
-
             currentUser = SessionManager.CurrentUsername;
 
             // --- Load permanent upgrades ---
@@ -120,7 +119,6 @@ namespace RocketOdyssey
                 maxHP = dbArmor;
                 rocketWeapon = dbWeapon;
             }
-
 
             // ---- Load coins and other state ----
             coins = DatabaseHelper.GetPlayerCoins(currentUser);
@@ -272,6 +270,7 @@ namespace RocketOdyssey
             this.TabStop = true;
             this.Focus();
         }
+
         private string FormatCoins(int coins)
         {
             if (coins >= 1_000_000) return $"{coins / 1_000_000.0:F1}M";
@@ -544,7 +543,6 @@ namespace RocketOdyssey
             PlayerRocket.Invalidate();
         }
 
-
         private void GameControl_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
         {
             // Ignore input during non-playable states
@@ -600,6 +598,7 @@ namespace RocketOdyssey
         // ----------------------------------------
         //   MOVEMENT TIMER (continuous movement)
         // ----------------------------------------
+
         private void MoveTimer_Tick(object sender, EventArgs e)
         {
             if (isPaused) return;
@@ -625,6 +624,7 @@ namespace RocketOdyssey
         // ----------------------------------------
         //   Fuel System
         // ----------------------------------------
+
         private void FuelTimer_Tick(object sender, EventArgs e)
         {
             if (isPaused) return;
@@ -652,6 +652,7 @@ namespace RocketOdyssey
         // ----------------------------------------
         //   Game Over Sequence
         // ----------------------------------------
+
         private void StartGameOverCountdown()
         {
             int countdown = 5;
@@ -711,10 +712,10 @@ namespace RocketOdyssey
             countdownTimer.Start();
         }
 
-
         // ----------------------------------------
         //   Launch Timer
         // ----------------------------------------
+
         private void LaunchDelayTimer_Tick(object sender, EventArgs e)
         {
             launchCountdown--;
@@ -750,7 +751,10 @@ namespace RocketOdyssey
             DatabaseHelper.UpdateHighScore(currentUser, score);
         }
 
-        // Call this once from the constructor AFTER InitializeComponent()
+        // ----------------------------------------
+        //  Automatic Focus Recovery
+        // ----------------------------------------
+
         private void EnableAutomaticFocusRecovery()
         {
             // Attach to any existing children
@@ -874,7 +878,7 @@ namespace RocketOdyssey
 
             SetGamePaused(false);
 
-            focusRecoveryEnabled = true;  // when closing it
+            focusRecoveryEnabled = true;
 
             // Resume countdown only if it's still active
             if (launchCountdown > 0)
@@ -917,6 +921,11 @@ namespace RocketOdyssey
             GameForm parentForm = (GameForm)this.FindForm();
             parentForm.Controls.Clear();
             parentForm.Controls.Add(newGame);
+
+            // 🔹 Force focus on the new game control after it's loaded
+            parentForm.ActiveControl = newGame;
+            newGame.Select();
+            newGame.Focus();
         }
 
 
@@ -1066,7 +1075,6 @@ namespace RocketOdyssey
             MessageBox.Show("Weapon charged!");
         }
 
-
         private void ActivateLaser()
         {
             if (rocketWeapon <= 0) return; // Weapon not unlocked
@@ -1189,7 +1197,6 @@ namespace RocketOdyssey
             };
             laserSyncTimer.Start();
         }
-
 
         public class LoopStream : WaveStream
         {
@@ -1366,7 +1373,6 @@ namespace RocketOdyssey
             }
         }
 
-
         private void StopLaserSound()
         {
             try
@@ -1426,8 +1432,6 @@ namespace RocketOdyssey
             }
             catch { }
         }
-
-
 
         private void StopAllSounds()
         {
