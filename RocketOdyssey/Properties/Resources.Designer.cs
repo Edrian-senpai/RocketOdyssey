@@ -153,6 +153,26 @@ namespace RocketOdyssey.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap laser_beam {
+            get {
+                object obj = ResourceManager.GetObject("laser_beam", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap laser_beam_long {
+            get {
+                object obj = ResourceManager.GetObject("laser_beam_long", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap Leaderboards_Logo {
             get {
                 object obj = ResourceManager.GetObject("Leaderboards_Logo", resourceCulture);
@@ -306,6 +326,16 @@ namespace RocketOdyssey.Properties {
         internal static System.Drawing.Bitmap Upgrades_Logo {
             get {
                 object obj = ResourceManager.GetObject("Upgrades_Logo", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Weapon_icon2 {
+            get {
+                object obj = ResourceManager.GetObject("Weapon_icon2", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

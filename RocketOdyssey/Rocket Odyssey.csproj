@@ -243,6 +243,9 @@
     <Content Include="Images&amp;Animations\rocket_2 animation\rocket_2_smol.gif" />
     <Content Include="Images&amp;Animations\rocket_2 animation\rocket_2_smol_down.gif" />
     <Content Include="Images&amp;Animations\rocket_2 animation\rocket_2_smol_up.gif" />
+    <None Include="Resources\Weapon_icon2.png" />
+    <None Include="Resources\laser-beam_long.gif" />
+    <None Include="Resources\laser-beam-fit.gif" />
     <None Include="Resources\Pause_Logo1.png" />
     <None Include="Resources\Pause_Logo.png" />
     <None Include="Resources\Pause_icon.png" />

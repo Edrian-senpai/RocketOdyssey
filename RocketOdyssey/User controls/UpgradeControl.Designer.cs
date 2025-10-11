@@ -31,13 +31,18 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(UpgradeControl));
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.pnUpgrades = new CuoreUI.Controls.cuiPanel();
+            this.pbCoin_Logo = new System.Windows.Forms.PictureBox();
+            this.lblCoins = new CuoreUI.Controls.cuiLabel();
+            this.lblWeaponPrice = new CuoreUI.Controls.cuiLabel();
+            this.lblArmorPrice = new CuoreUI.Controls.cuiLabel();
+            this.lblSpeedPrice = new CuoreUI.Controls.cuiLabel();
             this.btnBack = new CuoreUI.Controls.cuiButton();
-            this.cuiButton6 = new CuoreUI.Controls.cuiButton();
-            this.cuiButton5 = new CuoreUI.Controls.cuiButton();
-            this.cuiButton4 = new CuoreUI.Controls.cuiButton();
-            this.cuiButton3 = new CuoreUI.Controls.cuiButton();
-            this.cuiButton2 = new CuoreUI.Controls.cuiButton();
-            this.cuiButton1 = new CuoreUI.Controls.cuiButton();
+            this.btnSubWeapon = new CuoreUI.Controls.cuiButton();
+            this.btnAddWeapon = new CuoreUI.Controls.cuiButton();
+            this.btnSubArmor = new CuoreUI.Controls.cuiButton();
+            this.btnAddArmor = new CuoreUI.Controls.cuiButton();
+            this.btnSubSpeed = new CuoreUI.Controls.cuiButton();
+            this.btnAddSpeed = new CuoreUI.Controls.cuiButton();
             this.pbWeapon = new CuoreUI.Controls.cuiProgressBarHorizontal();
             this.pbArmor = new CuoreUI.Controls.cuiProgressBarHorizontal();
             this.pbSpeed = new CuoreUI.Controls.cuiProgressBarHorizontal();
@@ -53,6 +58,7 @@
             this.lblUpgrades = new CuoreUI.Controls.cuiLabel();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.pnUpgrades.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbCoin_Logo)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pb_Armor_Logo)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pb_Speed_Logo)).BeginInit();
@@ -80,13 +86,18 @@
             // pnUpgrades
             // 
             this.pnUpgrades.BackColor = System.Drawing.SystemColors.Control;
+            this.pnUpgrades.Controls.Add(this.pbCoin_Logo);
+            this.pnUpgrades.Controls.Add(this.lblCoins);
+            this.pnUpgrades.Controls.Add(this.lblWeaponPrice);
+            this.pnUpgrades.Controls.Add(this.lblArmorPrice);
+            this.pnUpgrades.Controls.Add(this.lblSpeedPrice);
             this.pnUpgrades.Controls.Add(this.btnBack);
-            this.pnUpgrades.Controls.Add(this.cuiButton6);
-            this.pnUpgrades.Controls.Add(this.cuiButton5);
-            this.pnUpgrades.Controls.Add(this.cuiButton4);
-            this.pnUpgrades.Controls.Add(this.cuiButton3);
-            this.pnUpgrades.Controls.Add(this.cuiButton2);
-            this.pnUpgrades.Controls.Add(this.cuiButton1);
+            this.pnUpgrades.Controls.Add(this.btnSubWeapon);
+            this.pnUpgrades.Controls.Add(this.btnAddWeapon);
+            this.pnUpgrades.Controls.Add(this.btnSubArmor);
+            this.pnUpgrades.Controls.Add(this.btnAddArmor);
+            this.pnUpgrades.Controls.Add(this.btnSubSpeed);
+            this.pnUpgrades.Controls.Add(this.btnAddSpeed);
             this.pnUpgrades.Controls.Add(this.pbWeapon);
             this.pnUpgrades.Controls.Add(this.pbArmor);
             this.pnUpgrades.Controls.Add(this.pbSpeed);
@@ -108,6 +119,78 @@
             this.pnUpgrades.Rounding = new System.Windows.Forms.Padding(8);
             this.pnUpgrades.Size = new System.Drawing.Size(475, 542);
             this.pnUpgrades.TabIndex = 5;
+            // 
+            // pbCoin_Logo
+            // 
+            this.pbCoin_Logo.BackColor = System.Drawing.Color.Transparent;
+            this.pbCoin_Logo.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("pbCoin_Logo.BackgroundImage")));
+            this.pbCoin_Logo.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.pbCoin_Logo.Location = new System.Drawing.Point(305, 2);
+            this.pbCoin_Logo.Name = "pbCoin_Logo";
+            this.pbCoin_Logo.Size = new System.Drawing.Size(56, 33);
+            this.pbCoin_Logo.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.pbCoin_Logo.TabIndex = 29;
+            this.pbCoin_Logo.TabStop = false;
+            this.pbCoin_Logo.WaitOnLoad = true;
+            // 
+            // lblCoins
+            // 
+            this.lblCoins.Content = "---";
+            this.lblCoins.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblCoins.ForeColor = System.Drawing.Color.White;
+            this.lblCoins.HorizontalAlignment = System.Drawing.StringAlignment.Near;
+            this.lblCoins.Location = new System.Drawing.Point(359, 5);
+            this.lblCoins.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.lblCoins.Name = "lblCoins";
+            this.lblCoins.Size = new System.Drawing.Size(103, 30);
+            this.lblCoins.TabIndex = 28;
+            this.lblCoins.TabStop = false;
+            this.lblCoins.VerticalAlignment = System.Drawing.StringAlignment.Center;
+            // 
+            // lblWeaponPrice
+            // 
+            this.lblWeaponPrice.BackColor = System.Drawing.Color.Transparent;
+            this.lblWeaponPrice.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.lblWeaponPrice.Content = "---\\ Coins";
+            this.lblWeaponPrice.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblWeaponPrice.ForeColor = System.Drawing.Color.White;
+            this.lblWeaponPrice.HorizontalAlignment = System.Drawing.StringAlignment.Center;
+            this.lblWeaponPrice.Location = new System.Drawing.Point(332, 455);
+            this.lblWeaponPrice.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.lblWeaponPrice.Name = "lblWeaponPrice";
+            this.lblWeaponPrice.Size = new System.Drawing.Size(130, 19);
+            this.lblWeaponPrice.TabIndex = 27;
+            this.lblWeaponPrice.VerticalAlignment = System.Drawing.StringAlignment.Center;
+            // 
+            // lblArmorPrice
+            // 
+            this.lblArmorPrice.BackColor = System.Drawing.Color.Transparent;
+            this.lblArmorPrice.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.lblArmorPrice.Content = "---\\ Coins";
+            this.lblArmorPrice.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblArmorPrice.ForeColor = System.Drawing.Color.White;
+            this.lblArmorPrice.HorizontalAlignment = System.Drawing.StringAlignment.Center;
+            this.lblArmorPrice.Location = new System.Drawing.Point(332, 350);
+            this.lblArmorPrice.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.lblArmorPrice.Name = "lblArmorPrice";
+            this.lblArmorPrice.Size = new System.Drawing.Size(130, 19);
+            this.lblArmorPrice.TabIndex = 26;
+            this.lblArmorPrice.VerticalAlignment = System.Drawing.StringAlignment.Center;
+            // 
+            // lblSpeedPrice
+            // 
+            this.lblSpeedPrice.BackColor = System.Drawing.Color.Transparent;
+            this.lblSpeedPrice.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.lblSpeedPrice.Content = "---\\ Coins";
+            this.lblSpeedPrice.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblSpeedPrice.ForeColor = System.Drawing.Color.White;
+            this.lblSpeedPrice.HorizontalAlignment = System.Drawing.StringAlignment.Center;
+            this.lblSpeedPrice.Location = new System.Drawing.Point(332, 249);
+            this.lblSpeedPrice.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.lblSpeedPrice.Name = "lblSpeedPrice";
+            this.lblSpeedPrice.Size = new System.Drawing.Size(130, 19);
+            this.lblSpeedPrice.TabIndex = 12;
+            this.lblSpeedPrice.VerticalAlignment = System.Drawing.StringAlignment.Center;
             // 
             // btnBack
             // 
@@ -149,239 +232,251 @@
             this.btnBack.TextOffset = new System.Drawing.Point(0, 0);
             this.btnBack.Click += new System.EventHandler(this.btnBack_Click);
             // 
-            // cuiButton6
+            // btnSubWeapon
             // 
-            this.cuiButton6.BackColor = System.Drawing.Color.Transparent;
-            this.cuiButton6.CheckButton = false;
-            this.cuiButton6.Checked = false;
-            this.cuiButton6.CheckedBackground = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(106)))), ((int)(((byte)(0)))));
-            this.cuiButton6.CheckedForeColor = System.Drawing.Color.White;
-            this.cuiButton6.CheckedImageTint = System.Drawing.Color.White;
-            this.cuiButton6.CheckedOutline = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(106)))), ((int)(((byte)(0)))));
-            this.cuiButton6.Content = "-";
-            this.cuiButton6.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.cuiButton6.DialogResult = System.Windows.Forms.DialogResult.None;
-            this.cuiButton6.Font = new System.Drawing.Font("Palatino Linotype", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.cuiButton6.ForeColor = System.Drawing.Color.White;
-            this.cuiButton6.HoverBackground = System.Drawing.Color.Goldenrod;
-            this.cuiButton6.HoverForeColor = System.Drawing.Color.LightGray;
-            this.cuiButton6.HoverImageTint = System.Drawing.Color.Goldenrod;
-            this.cuiButton6.HoverOutline = System.Drawing.Color.FromArgb(((int)(((byte)(32)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-            this.cuiButton6.Image = null;
-            this.cuiButton6.ImageAutoCenter = true;
-            this.cuiButton6.ImageExpand = new System.Drawing.Point(0, 0);
-            this.cuiButton6.ImageOffset = new System.Drawing.Point(0, 0);
-            this.cuiButton6.Location = new System.Drawing.Point(136, 457);
-            this.cuiButton6.Name = "cuiButton6";
-            this.cuiButton6.NormalBackground = System.Drawing.Color.DarkGoldenrod;
-            this.cuiButton6.NormalForeColor = System.Drawing.Color.White;
-            this.cuiButton6.NormalImageTint = System.Drawing.Color.DarkGoldenrod;
-            this.cuiButton6.NormalOutline = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-            this.cuiButton6.OutlineThickness = 1F;
-            this.cuiButton6.PressedBackground = System.Drawing.Color.Cornsilk;
-            this.cuiButton6.PressedForeColor = System.Drawing.Color.LightGray;
-            this.cuiButton6.PressedImageTint = System.Drawing.Color.Cornsilk;
-            this.cuiButton6.PressedOutline = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-            this.cuiButton6.Rounding = new System.Windows.Forms.Padding(8);
-            this.cuiButton6.Size = new System.Drawing.Size(31, 19);
-            this.cuiButton6.TabIndex = 24;
-            this.cuiButton6.TextAlignment = System.Drawing.StringAlignment.Center;
-            this.cuiButton6.TextOffset = new System.Drawing.Point(0, 0);
+            this.btnSubWeapon.BackColor = System.Drawing.Color.Transparent;
+            this.btnSubWeapon.CheckButton = false;
+            this.btnSubWeapon.Checked = false;
+            this.btnSubWeapon.CheckedBackground = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(106)))), ((int)(((byte)(0)))));
+            this.btnSubWeapon.CheckedForeColor = System.Drawing.Color.White;
+            this.btnSubWeapon.CheckedImageTint = System.Drawing.Color.White;
+            this.btnSubWeapon.CheckedOutline = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(106)))), ((int)(((byte)(0)))));
+            this.btnSubWeapon.Content = "-";
+            this.btnSubWeapon.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnSubWeapon.DialogResult = System.Windows.Forms.DialogResult.None;
+            this.btnSubWeapon.Font = new System.Drawing.Font("Palatino Linotype", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnSubWeapon.ForeColor = System.Drawing.Color.White;
+            this.btnSubWeapon.HoverBackground = System.Drawing.Color.Goldenrod;
+            this.btnSubWeapon.HoverForeColor = System.Drawing.Color.LightGray;
+            this.btnSubWeapon.HoverImageTint = System.Drawing.Color.Goldenrod;
+            this.btnSubWeapon.HoverOutline = System.Drawing.Color.FromArgb(((int)(((byte)(32)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            this.btnSubWeapon.Image = null;
+            this.btnSubWeapon.ImageAutoCenter = true;
+            this.btnSubWeapon.ImageExpand = new System.Drawing.Point(0, 0);
+            this.btnSubWeapon.ImageOffset = new System.Drawing.Point(0, 0);
+            this.btnSubWeapon.Location = new System.Drawing.Point(136, 457);
+            this.btnSubWeapon.Name = "btnSubWeapon";
+            this.btnSubWeapon.NormalBackground = System.Drawing.Color.DarkGoldenrod;
+            this.btnSubWeapon.NormalForeColor = System.Drawing.Color.White;
+            this.btnSubWeapon.NormalImageTint = System.Drawing.Color.DarkGoldenrod;
+            this.btnSubWeapon.NormalOutline = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            this.btnSubWeapon.OutlineThickness = 1F;
+            this.btnSubWeapon.PressedBackground = System.Drawing.Color.Cornsilk;
+            this.btnSubWeapon.PressedForeColor = System.Drawing.Color.LightGray;
+            this.btnSubWeapon.PressedImageTint = System.Drawing.Color.Cornsilk;
+            this.btnSubWeapon.PressedOutline = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            this.btnSubWeapon.Rounding = new System.Windows.Forms.Padding(8);
+            this.btnSubWeapon.Size = new System.Drawing.Size(31, 19);
+            this.btnSubWeapon.TabIndex = 24;
+            this.btnSubWeapon.TextAlignment = System.Drawing.StringAlignment.Center;
+            this.btnSubWeapon.TextOffset = new System.Drawing.Point(0, 0);
+            this.btnSubWeapon.Click += new System.EventHandler(this.btnSubWeapon_Click);
+            this.btnSubWeapon.DoubleClick += new System.EventHandler(this.btnSubWeapon_Click);
             // 
-            // cuiButton5
+            // btnAddWeapon
             // 
-            this.cuiButton5.BackColor = System.Drawing.Color.Transparent;
-            this.cuiButton5.CheckButton = false;
-            this.cuiButton5.Checked = false;
-            this.cuiButton5.CheckedBackground = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(106)))), ((int)(((byte)(0)))));
-            this.cuiButton5.CheckedForeColor = System.Drawing.Color.White;
-            this.cuiButton5.CheckedImageTint = System.Drawing.Color.White;
-            this.cuiButton5.CheckedOutline = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(106)))), ((int)(((byte)(0)))));
-            this.cuiButton5.Content = "+";
-            this.cuiButton5.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.cuiButton5.DialogResult = System.Windows.Forms.DialogResult.None;
-            this.cuiButton5.Font = new System.Drawing.Font("Palatino Linotype", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.cuiButton5.ForeColor = System.Drawing.Color.White;
-            this.cuiButton5.HoverBackground = System.Drawing.Color.Goldenrod;
-            this.cuiButton5.HoverForeColor = System.Drawing.Color.LightGray;
-            this.cuiButton5.HoverImageTint = System.Drawing.Color.Goldenrod;
-            this.cuiButton5.HoverOutline = System.Drawing.Color.FromArgb(((int)(((byte)(32)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-            this.cuiButton5.Image = null;
-            this.cuiButton5.ImageAutoCenter = true;
-            this.cuiButton5.ImageExpand = new System.Drawing.Point(0, 0);
-            this.cuiButton5.ImageOffset = new System.Drawing.Point(0, 0);
-            this.cuiButton5.Location = new System.Drawing.Point(271, 457);
-            this.cuiButton5.Name = "cuiButton5";
-            this.cuiButton5.NormalBackground = System.Drawing.Color.DarkGoldenrod;
-            this.cuiButton5.NormalForeColor = System.Drawing.Color.White;
-            this.cuiButton5.NormalImageTint = System.Drawing.Color.DarkGoldenrod;
-            this.cuiButton5.NormalOutline = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-            this.cuiButton5.OutlineThickness = 1F;
-            this.cuiButton5.PressedBackground = System.Drawing.Color.Cornsilk;
-            this.cuiButton5.PressedForeColor = System.Drawing.Color.LightGray;
-            this.cuiButton5.PressedImageTint = System.Drawing.Color.Cornsilk;
-            this.cuiButton5.PressedOutline = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-            this.cuiButton5.Rounding = new System.Windows.Forms.Padding(8);
-            this.cuiButton5.Size = new System.Drawing.Size(31, 19);
-            this.cuiButton5.TabIndex = 23;
-            this.cuiButton5.TextAlignment = System.Drawing.StringAlignment.Center;
-            this.cuiButton5.TextOffset = new System.Drawing.Point(0, 0);
+            this.btnAddWeapon.BackColor = System.Drawing.Color.Transparent;
+            this.btnAddWeapon.CheckButton = false;
+            this.btnAddWeapon.Checked = false;
+            this.btnAddWeapon.CheckedBackground = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(106)))), ((int)(((byte)(0)))));
+            this.btnAddWeapon.CheckedForeColor = System.Drawing.Color.White;
+            this.btnAddWeapon.CheckedImageTint = System.Drawing.Color.White;
+            this.btnAddWeapon.CheckedOutline = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(106)))), ((int)(((byte)(0)))));
+            this.btnAddWeapon.Content = "+";
+            this.btnAddWeapon.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnAddWeapon.DialogResult = System.Windows.Forms.DialogResult.None;
+            this.btnAddWeapon.Font = new System.Drawing.Font("Palatino Linotype", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnAddWeapon.ForeColor = System.Drawing.Color.White;
+            this.btnAddWeapon.HoverBackground = System.Drawing.Color.Goldenrod;
+            this.btnAddWeapon.HoverForeColor = System.Drawing.Color.LightGray;
+            this.btnAddWeapon.HoverImageTint = System.Drawing.Color.Goldenrod;
+            this.btnAddWeapon.HoverOutline = System.Drawing.Color.FromArgb(((int)(((byte)(32)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            this.btnAddWeapon.Image = null;
+            this.btnAddWeapon.ImageAutoCenter = true;
+            this.btnAddWeapon.ImageExpand = new System.Drawing.Point(0, 0);
+            this.btnAddWeapon.ImageOffset = new System.Drawing.Point(0, 0);
+            this.btnAddWeapon.Location = new System.Drawing.Point(271, 457);
+            this.btnAddWeapon.Name = "btnAddWeapon";
+            this.btnAddWeapon.NormalBackground = System.Drawing.Color.DarkGoldenrod;
+            this.btnAddWeapon.NormalForeColor = System.Drawing.Color.White;
+            this.btnAddWeapon.NormalImageTint = System.Drawing.Color.DarkGoldenrod;
+            this.btnAddWeapon.NormalOutline = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            this.btnAddWeapon.OutlineThickness = 1F;
+            this.btnAddWeapon.PressedBackground = System.Drawing.Color.Cornsilk;
+            this.btnAddWeapon.PressedForeColor = System.Drawing.Color.LightGray;
+            this.btnAddWeapon.PressedImageTint = System.Drawing.Color.Cornsilk;
+            this.btnAddWeapon.PressedOutline = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            this.btnAddWeapon.Rounding = new System.Windows.Forms.Padding(8);
+            this.btnAddWeapon.Size = new System.Drawing.Size(31, 19);
+            this.btnAddWeapon.TabIndex = 23;
+            this.btnAddWeapon.TextAlignment = System.Drawing.StringAlignment.Center;
+            this.btnAddWeapon.TextOffset = new System.Drawing.Point(0, 0);
+            this.btnAddWeapon.Click += new System.EventHandler(this.btnAddWeapon_Click);
+            this.btnAddWeapon.DoubleClick += new System.EventHandler(this.btnAddWeapon_Click);
             // 
-            // cuiButton4
+            // btnSubArmor
             // 
-            this.cuiButton4.BackColor = System.Drawing.Color.Transparent;
-            this.cuiButton4.CheckButton = false;
-            this.cuiButton4.Checked = false;
-            this.cuiButton4.CheckedBackground = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(106)))), ((int)(((byte)(0)))));
-            this.cuiButton4.CheckedForeColor = System.Drawing.Color.White;
-            this.cuiButton4.CheckedImageTint = System.Drawing.Color.White;
-            this.cuiButton4.CheckedOutline = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(106)))), ((int)(((byte)(0)))));
-            this.cuiButton4.Content = "-";
-            this.cuiButton4.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.cuiButton4.DialogResult = System.Windows.Forms.DialogResult.None;
-            this.cuiButton4.Font = new System.Drawing.Font("Palatino Linotype", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.cuiButton4.ForeColor = System.Drawing.Color.White;
-            this.cuiButton4.HoverBackground = System.Drawing.Color.Goldenrod;
-            this.cuiButton4.HoverForeColor = System.Drawing.Color.LightGray;
-            this.cuiButton4.HoverImageTint = System.Drawing.Color.Goldenrod;
-            this.cuiButton4.HoverOutline = System.Drawing.Color.FromArgb(((int)(((byte)(32)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-            this.cuiButton4.Image = null;
-            this.cuiButton4.ImageAutoCenter = true;
-            this.cuiButton4.ImageExpand = new System.Drawing.Point(0, 0);
-            this.cuiButton4.ImageOffset = new System.Drawing.Point(0, 0);
-            this.cuiButton4.Location = new System.Drawing.Point(136, 352);
-            this.cuiButton4.Name = "cuiButton4";
-            this.cuiButton4.NormalBackground = System.Drawing.Color.DarkGoldenrod;
-            this.cuiButton4.NormalForeColor = System.Drawing.Color.White;
-            this.cuiButton4.NormalImageTint = System.Drawing.Color.DarkGoldenrod;
-            this.cuiButton4.NormalOutline = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-            this.cuiButton4.OutlineThickness = 1F;
-            this.cuiButton4.PressedBackground = System.Drawing.Color.Cornsilk;
-            this.cuiButton4.PressedForeColor = System.Drawing.Color.LightGray;
-            this.cuiButton4.PressedImageTint = System.Drawing.Color.Cornsilk;
-            this.cuiButton4.PressedOutline = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-            this.cuiButton4.Rounding = new System.Windows.Forms.Padding(8);
-            this.cuiButton4.Size = new System.Drawing.Size(31, 19);
-            this.cuiButton4.TabIndex = 22;
-            this.cuiButton4.TextAlignment = System.Drawing.StringAlignment.Center;
-            this.cuiButton4.TextOffset = new System.Drawing.Point(0, 0);
+            this.btnSubArmor.BackColor = System.Drawing.Color.Transparent;
+            this.btnSubArmor.CheckButton = false;
+            this.btnSubArmor.Checked = false;
+            this.btnSubArmor.CheckedBackground = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(106)))), ((int)(((byte)(0)))));
+            this.btnSubArmor.CheckedForeColor = System.Drawing.Color.White;
+            this.btnSubArmor.CheckedImageTint = System.Drawing.Color.White;
+            this.btnSubArmor.CheckedOutline = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(106)))), ((int)(((byte)(0)))));
+            this.btnSubArmor.Content = "-";
+            this.btnSubArmor.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnSubArmor.DialogResult = System.Windows.Forms.DialogResult.None;
+            this.btnSubArmor.Font = new System.Drawing.Font("Palatino Linotype", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnSubArmor.ForeColor = System.Drawing.Color.White;
+            this.btnSubArmor.HoverBackground = System.Drawing.Color.Goldenrod;
+            this.btnSubArmor.HoverForeColor = System.Drawing.Color.LightGray;
+            this.btnSubArmor.HoverImageTint = System.Drawing.Color.Goldenrod;
+            this.btnSubArmor.HoverOutline = System.Drawing.Color.FromArgb(((int)(((byte)(32)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            this.btnSubArmor.Image = null;
+            this.btnSubArmor.ImageAutoCenter = true;
+            this.btnSubArmor.ImageExpand = new System.Drawing.Point(0, 0);
+            this.btnSubArmor.ImageOffset = new System.Drawing.Point(0, 0);
+            this.btnSubArmor.Location = new System.Drawing.Point(136, 352);
+            this.btnSubArmor.Name = "btnSubArmor";
+            this.btnSubArmor.NormalBackground = System.Drawing.Color.DarkGoldenrod;
+            this.btnSubArmor.NormalForeColor = System.Drawing.Color.White;
+            this.btnSubArmor.NormalImageTint = System.Drawing.Color.DarkGoldenrod;
+            this.btnSubArmor.NormalOutline = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            this.btnSubArmor.OutlineThickness = 1F;
+            this.btnSubArmor.PressedBackground = System.Drawing.Color.Cornsilk;
+            this.btnSubArmor.PressedForeColor = System.Drawing.Color.LightGray;
+            this.btnSubArmor.PressedImageTint = System.Drawing.Color.Cornsilk;
+            this.btnSubArmor.PressedOutline = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            this.btnSubArmor.Rounding = new System.Windows.Forms.Padding(8);
+            this.btnSubArmor.Size = new System.Drawing.Size(31, 19);
+            this.btnSubArmor.TabIndex = 22;
+            this.btnSubArmor.TextAlignment = System.Drawing.StringAlignment.Center;
+            this.btnSubArmor.TextOffset = new System.Drawing.Point(0, 0);
+            this.btnSubArmor.Click += new System.EventHandler(this.btnSubArmor_Click);
+            this.btnSubArmor.DoubleClick += new System.EventHandler(this.btnSubArmor_Click);
             // 
-            // cuiButton3
+            // btnAddArmor
             // 
-            this.cuiButton3.BackColor = System.Drawing.Color.Transparent;
-            this.cuiButton3.CheckButton = false;
-            this.cuiButton3.Checked = false;
-            this.cuiButton3.CheckedBackground = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(106)))), ((int)(((byte)(0)))));
-            this.cuiButton3.CheckedForeColor = System.Drawing.Color.White;
-            this.cuiButton3.CheckedImageTint = System.Drawing.Color.White;
-            this.cuiButton3.CheckedOutline = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(106)))), ((int)(((byte)(0)))));
-            this.cuiButton3.Content = "+";
-            this.cuiButton3.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.cuiButton3.DialogResult = System.Windows.Forms.DialogResult.None;
-            this.cuiButton3.Font = new System.Drawing.Font("Palatino Linotype", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.cuiButton3.ForeColor = System.Drawing.Color.White;
-            this.cuiButton3.HoverBackground = System.Drawing.Color.Goldenrod;
-            this.cuiButton3.HoverForeColor = System.Drawing.Color.LightGray;
-            this.cuiButton3.HoverImageTint = System.Drawing.Color.Goldenrod;
-            this.cuiButton3.HoverOutline = System.Drawing.Color.FromArgb(((int)(((byte)(32)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-            this.cuiButton3.Image = null;
-            this.cuiButton3.ImageAutoCenter = true;
-            this.cuiButton3.ImageExpand = new System.Drawing.Point(0, 0);
-            this.cuiButton3.ImageOffset = new System.Drawing.Point(0, 0);
-            this.cuiButton3.Location = new System.Drawing.Point(271, 352);
-            this.cuiButton3.Name = "cuiButton3";
-            this.cuiButton3.NormalBackground = System.Drawing.Color.DarkGoldenrod;
-            this.cuiButton3.NormalForeColor = System.Drawing.Color.White;
-            this.cuiButton3.NormalImageTint = System.Drawing.Color.DarkGoldenrod;
-            this.cuiButton3.NormalOutline = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-            this.cuiButton3.OutlineThickness = 1F;
-            this.cuiButton3.PressedBackground = System.Drawing.Color.Cornsilk;
-            this.cuiButton3.PressedForeColor = System.Drawing.Color.LightGray;
-            this.cuiButton3.PressedImageTint = System.Drawing.Color.Cornsilk;
-            this.cuiButton3.PressedOutline = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-            this.cuiButton3.Rounding = new System.Windows.Forms.Padding(8);
-            this.cuiButton3.Size = new System.Drawing.Size(31, 19);
-            this.cuiButton3.TabIndex = 21;
-            this.cuiButton3.TextAlignment = System.Drawing.StringAlignment.Center;
-            this.cuiButton3.TextOffset = new System.Drawing.Point(0, 0);
+            this.btnAddArmor.BackColor = System.Drawing.Color.Transparent;
+            this.btnAddArmor.CheckButton = false;
+            this.btnAddArmor.Checked = false;
+            this.btnAddArmor.CheckedBackground = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(106)))), ((int)(((byte)(0)))));
+            this.btnAddArmor.CheckedForeColor = System.Drawing.Color.White;
+            this.btnAddArmor.CheckedImageTint = System.Drawing.Color.White;
+            this.btnAddArmor.CheckedOutline = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(106)))), ((int)(((byte)(0)))));
+            this.btnAddArmor.Content = "+";
+            this.btnAddArmor.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnAddArmor.DialogResult = System.Windows.Forms.DialogResult.None;
+            this.btnAddArmor.Font = new System.Drawing.Font("Palatino Linotype", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnAddArmor.ForeColor = System.Drawing.Color.White;
+            this.btnAddArmor.HoverBackground = System.Drawing.Color.Goldenrod;
+            this.btnAddArmor.HoverForeColor = System.Drawing.Color.LightGray;
+            this.btnAddArmor.HoverImageTint = System.Drawing.Color.Goldenrod;
+            this.btnAddArmor.HoverOutline = System.Drawing.Color.FromArgb(((int)(((byte)(32)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            this.btnAddArmor.Image = null;
+            this.btnAddArmor.ImageAutoCenter = true;
+            this.btnAddArmor.ImageExpand = new System.Drawing.Point(0, 0);
+            this.btnAddArmor.ImageOffset = new System.Drawing.Point(0, 0);
+            this.btnAddArmor.Location = new System.Drawing.Point(271, 352);
+            this.btnAddArmor.Name = "btnAddArmor";
+            this.btnAddArmor.NormalBackground = System.Drawing.Color.DarkGoldenrod;
+            this.btnAddArmor.NormalForeColor = System.Drawing.Color.White;
+            this.btnAddArmor.NormalImageTint = System.Drawing.Color.DarkGoldenrod;
+            this.btnAddArmor.NormalOutline = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            this.btnAddArmor.OutlineThickness = 1F;
+            this.btnAddArmor.PressedBackground = System.Drawing.Color.Cornsilk;
+            this.btnAddArmor.PressedForeColor = System.Drawing.Color.LightGray;
+            this.btnAddArmor.PressedImageTint = System.Drawing.Color.Cornsilk;
+            this.btnAddArmor.PressedOutline = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            this.btnAddArmor.Rounding = new System.Windows.Forms.Padding(8);
+            this.btnAddArmor.Size = new System.Drawing.Size(31, 19);
+            this.btnAddArmor.TabIndex = 21;
+            this.btnAddArmor.TextAlignment = System.Drawing.StringAlignment.Center;
+            this.btnAddArmor.TextOffset = new System.Drawing.Point(0, 0);
+            this.btnAddArmor.Click += new System.EventHandler(this.btnAddArmor_Click);
+            this.btnAddArmor.DoubleClick += new System.EventHandler(this.btnAddArmor_Click);
             // 
-            // cuiButton2
+            // btnSubSpeed
             // 
-            this.cuiButton2.BackColor = System.Drawing.Color.Transparent;
-            this.cuiButton2.CheckButton = false;
-            this.cuiButton2.Checked = false;
-            this.cuiButton2.CheckedBackground = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(106)))), ((int)(((byte)(0)))));
-            this.cuiButton2.CheckedForeColor = System.Drawing.Color.White;
-            this.cuiButton2.CheckedImageTint = System.Drawing.Color.White;
-            this.cuiButton2.CheckedOutline = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(106)))), ((int)(((byte)(0)))));
-            this.cuiButton2.Content = "-";
-            this.cuiButton2.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.cuiButton2.DialogResult = System.Windows.Forms.DialogResult.None;
-            this.cuiButton2.Font = new System.Drawing.Font("Palatino Linotype", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.cuiButton2.ForeColor = System.Drawing.Color.White;
-            this.cuiButton2.HoverBackground = System.Drawing.Color.Goldenrod;
-            this.cuiButton2.HoverForeColor = System.Drawing.Color.LightGray;
-            this.cuiButton2.HoverImageTint = System.Drawing.Color.Goldenrod;
-            this.cuiButton2.HoverOutline = System.Drawing.Color.FromArgb(((int)(((byte)(32)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-            this.cuiButton2.Image = null;
-            this.cuiButton2.ImageAutoCenter = true;
-            this.cuiButton2.ImageExpand = new System.Drawing.Point(0, 0);
-            this.cuiButton2.ImageOffset = new System.Drawing.Point(0, 0);
-            this.cuiButton2.Location = new System.Drawing.Point(136, 249);
-            this.cuiButton2.Name = "cuiButton2";
-            this.cuiButton2.NormalBackground = System.Drawing.Color.DarkGoldenrod;
-            this.cuiButton2.NormalForeColor = System.Drawing.Color.White;
-            this.cuiButton2.NormalImageTint = System.Drawing.Color.DarkGoldenrod;
-            this.cuiButton2.NormalOutline = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-            this.cuiButton2.OutlineThickness = 1F;
-            this.cuiButton2.PressedBackground = System.Drawing.Color.Cornsilk;
-            this.cuiButton2.PressedForeColor = System.Drawing.Color.LightGray;
-            this.cuiButton2.PressedImageTint = System.Drawing.Color.Cornsilk;
-            this.cuiButton2.PressedOutline = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-            this.cuiButton2.Rounding = new System.Windows.Forms.Padding(8);
-            this.cuiButton2.Size = new System.Drawing.Size(31, 19);
-            this.cuiButton2.TabIndex = 20;
-            this.cuiButton2.TextAlignment = System.Drawing.StringAlignment.Center;
-            this.cuiButton2.TextOffset = new System.Drawing.Point(0, 0);
+            this.btnSubSpeed.BackColor = System.Drawing.Color.Transparent;
+            this.btnSubSpeed.CheckButton = false;
+            this.btnSubSpeed.Checked = false;
+            this.btnSubSpeed.CheckedBackground = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(106)))), ((int)(((byte)(0)))));
+            this.btnSubSpeed.CheckedForeColor = System.Drawing.Color.White;
+            this.btnSubSpeed.CheckedImageTint = System.Drawing.Color.White;
+            this.btnSubSpeed.CheckedOutline = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(106)))), ((int)(((byte)(0)))));
+            this.btnSubSpeed.Content = "-";
+            this.btnSubSpeed.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnSubSpeed.DialogResult = System.Windows.Forms.DialogResult.None;
+            this.btnSubSpeed.Font = new System.Drawing.Font("Palatino Linotype", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnSubSpeed.ForeColor = System.Drawing.Color.White;
+            this.btnSubSpeed.HoverBackground = System.Drawing.Color.Goldenrod;
+            this.btnSubSpeed.HoverForeColor = System.Drawing.Color.LightGray;
+            this.btnSubSpeed.HoverImageTint = System.Drawing.Color.Goldenrod;
+            this.btnSubSpeed.HoverOutline = System.Drawing.Color.FromArgb(((int)(((byte)(32)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            this.btnSubSpeed.Image = null;
+            this.btnSubSpeed.ImageAutoCenter = true;
+            this.btnSubSpeed.ImageExpand = new System.Drawing.Point(0, 0);
+            this.btnSubSpeed.ImageOffset = new System.Drawing.Point(0, 0);
+            this.btnSubSpeed.Location = new System.Drawing.Point(136, 249);
+            this.btnSubSpeed.Name = "btnSubSpeed";
+            this.btnSubSpeed.NormalBackground = System.Drawing.Color.DarkGoldenrod;
+            this.btnSubSpeed.NormalForeColor = System.Drawing.Color.White;
+            this.btnSubSpeed.NormalImageTint = System.Drawing.Color.DarkGoldenrod;
+            this.btnSubSpeed.NormalOutline = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            this.btnSubSpeed.OutlineThickness = 1F;
+            this.btnSubSpeed.PressedBackground = System.Drawing.Color.Cornsilk;
+            this.btnSubSpeed.PressedForeColor = System.Drawing.Color.LightGray;
+            this.btnSubSpeed.PressedImageTint = System.Drawing.Color.Cornsilk;
+            this.btnSubSpeed.PressedOutline = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            this.btnSubSpeed.Rounding = new System.Windows.Forms.Padding(8);
+            this.btnSubSpeed.Size = new System.Drawing.Size(31, 19);
+            this.btnSubSpeed.TabIndex = 20;
+            this.btnSubSpeed.TextAlignment = System.Drawing.StringAlignment.Center;
+            this.btnSubSpeed.TextOffset = new System.Drawing.Point(0, 0);
+            this.btnSubSpeed.Click += new System.EventHandler(this.btnSubSpeed_Click);
+            this.btnSubSpeed.DoubleClick += new System.EventHandler(this.btnSubSpeed_Click);
             // 
-            // cuiButton1
+            // btnAddSpeed
             // 
-            this.cuiButton1.BackColor = System.Drawing.Color.Transparent;
-            this.cuiButton1.CheckButton = false;
-            this.cuiButton1.Checked = false;
-            this.cuiButton1.CheckedBackground = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(106)))), ((int)(((byte)(0)))));
-            this.cuiButton1.CheckedForeColor = System.Drawing.Color.White;
-            this.cuiButton1.CheckedImageTint = System.Drawing.Color.White;
-            this.cuiButton1.CheckedOutline = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(106)))), ((int)(((byte)(0)))));
-            this.cuiButton1.Content = "+";
-            this.cuiButton1.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.cuiButton1.DialogResult = System.Windows.Forms.DialogResult.None;
-            this.cuiButton1.Font = new System.Drawing.Font("Palatino Linotype", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.cuiButton1.ForeColor = System.Drawing.Color.White;
-            this.cuiButton1.HoverBackground = System.Drawing.Color.Goldenrod;
-            this.cuiButton1.HoverForeColor = System.Drawing.Color.LightGray;
-            this.cuiButton1.HoverImageTint = System.Drawing.Color.Goldenrod;
-            this.cuiButton1.HoverOutline = System.Drawing.Color.FromArgb(((int)(((byte)(32)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-            this.cuiButton1.Image = null;
-            this.cuiButton1.ImageAutoCenter = true;
-            this.cuiButton1.ImageExpand = new System.Drawing.Point(0, 0);
-            this.cuiButton1.ImageOffset = new System.Drawing.Point(0, 0);
-            this.cuiButton1.Location = new System.Drawing.Point(271, 249);
-            this.cuiButton1.Name = "cuiButton1";
-            this.cuiButton1.NormalBackground = System.Drawing.Color.DarkGoldenrod;
-            this.cuiButton1.NormalForeColor = System.Drawing.Color.White;
-            this.cuiButton1.NormalImageTint = System.Drawing.Color.DarkGoldenrod;
-            this.cuiButton1.NormalOutline = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-            this.cuiButton1.OutlineThickness = 1F;
-            this.cuiButton1.PressedBackground = System.Drawing.Color.Cornsilk;
-            this.cuiButton1.PressedForeColor = System.Drawing.Color.LightGray;
-            this.cuiButton1.PressedImageTint = System.Drawing.Color.Cornsilk;
-            this.cuiButton1.PressedOutline = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-            this.cuiButton1.Rounding = new System.Windows.Forms.Padding(8);
-            this.cuiButton1.Size = new System.Drawing.Size(31, 19);
-            this.cuiButton1.TabIndex = 19;
-            this.cuiButton1.TextAlignment = System.Drawing.StringAlignment.Center;
-            this.cuiButton1.TextOffset = new System.Drawing.Point(0, 0);
+            this.btnAddSpeed.BackColor = System.Drawing.Color.Transparent;
+            this.btnAddSpeed.CheckButton = false;
+            this.btnAddSpeed.Checked = false;
+            this.btnAddSpeed.CheckedBackground = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(106)))), ((int)(((byte)(0)))));
+            this.btnAddSpeed.CheckedForeColor = System.Drawing.Color.White;
+            this.btnAddSpeed.CheckedImageTint = System.Drawing.Color.White;
+            this.btnAddSpeed.CheckedOutline = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(106)))), ((int)(((byte)(0)))));
+            this.btnAddSpeed.Content = "+";
+            this.btnAddSpeed.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnAddSpeed.DialogResult = System.Windows.Forms.DialogResult.None;
+            this.btnAddSpeed.Font = new System.Drawing.Font("Palatino Linotype", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnAddSpeed.ForeColor = System.Drawing.Color.White;
+            this.btnAddSpeed.HoverBackground = System.Drawing.Color.Goldenrod;
+            this.btnAddSpeed.HoverForeColor = System.Drawing.Color.LightGray;
+            this.btnAddSpeed.HoverImageTint = System.Drawing.Color.Goldenrod;
+            this.btnAddSpeed.HoverOutline = System.Drawing.Color.FromArgb(((int)(((byte)(32)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            this.btnAddSpeed.Image = null;
+            this.btnAddSpeed.ImageAutoCenter = true;
+            this.btnAddSpeed.ImageExpand = new System.Drawing.Point(0, 0);
+            this.btnAddSpeed.ImageOffset = new System.Drawing.Point(0, 0);
+            this.btnAddSpeed.Location = new System.Drawing.Point(271, 249);
+            this.btnAddSpeed.Name = "btnAddSpeed";
+            this.btnAddSpeed.NormalBackground = System.Drawing.Color.DarkGoldenrod;
+            this.btnAddSpeed.NormalForeColor = System.Drawing.Color.White;
+            this.btnAddSpeed.NormalImageTint = System.Drawing.Color.DarkGoldenrod;
+            this.btnAddSpeed.NormalOutline = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            this.btnAddSpeed.OutlineThickness = 1F;
+            this.btnAddSpeed.PressedBackground = System.Drawing.Color.Cornsilk;
+            this.btnAddSpeed.PressedForeColor = System.Drawing.Color.LightGray;
+            this.btnAddSpeed.PressedImageTint = System.Drawing.Color.Cornsilk;
+            this.btnAddSpeed.PressedOutline = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            this.btnAddSpeed.Rounding = new System.Windows.Forms.Padding(8);
+            this.btnAddSpeed.Size = new System.Drawing.Size(31, 19);
+            this.btnAddSpeed.TabIndex = 19;
+            this.btnAddSpeed.TextAlignment = System.Drawing.StringAlignment.Center;
+            this.btnAddSpeed.TextOffset = new System.Drawing.Point(0, 0);
+            this.btnAddSpeed.Click += new System.EventHandler(this.btnAddSpeed_Click);
+            this.btnAddSpeed.DoubleClick += new System.EventHandler(this.btnAddSpeed_Click);
             // 
             // pbWeapon
             // 
@@ -547,6 +642,8 @@
             this.btnWeapon.TabIndex = 10;
             this.btnWeapon.TextAlignment = System.Drawing.StringAlignment.Center;
             this.btnWeapon.TextOffset = new System.Drawing.Point(0, 0);
+            this.btnWeapon.Click += new System.EventHandler(this.btnWeapon_Click);
+            this.btnWeapon.DoubleClick += new System.EventHandler(this.btnWeapon_Click);
             // 
             // btnArmor
             // 
@@ -586,6 +683,8 @@
             this.btnArmor.TabIndex = 9;
             this.btnArmor.TextAlignment = System.Drawing.StringAlignment.Center;
             this.btnArmor.TextOffset = new System.Drawing.Point(0, 0);
+            this.btnArmor.Click += new System.EventHandler(this.btnArmor_Click);
+            this.btnArmor.DoubleClick += new System.EventHandler(this.btnArmor_Click);
             // 
             // btnSpeed
             // 
@@ -625,6 +724,8 @@
             this.btnSpeed.TabIndex = 8;
             this.btnSpeed.TextAlignment = System.Drawing.StringAlignment.Center;
             this.btnSpeed.TextOffset = new System.Drawing.Point(0, 0);
+            this.btnSpeed.Click += new System.EventHandler(this.btnSpeed_Click);
+            this.btnSpeed.DoubleClick += new System.EventHandler(this.btnSpeed_Click);
             // 
             // lblUpgrades
             // 
@@ -635,7 +736,7 @@
             this.lblUpgrades.Font = new System.Drawing.Font("Script MT Bold", 26F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblUpgrades.ForeColor = System.Drawing.Color.White;
             this.lblUpgrades.HorizontalAlignment = System.Drawing.StringAlignment.Center;
-            this.lblUpgrades.Location = new System.Drawing.Point(115, 5);
+            this.lblUpgrades.Location = new System.Drawing.Point(115, 15);
             this.lblUpgrades.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.lblUpgrades.Name = "lblUpgrades";
             this.lblUpgrades.Size = new System.Drawing.Size(254, 113);
@@ -653,6 +754,7 @@
             this.Size = new System.Drawing.Size(720, 720);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.pnUpgrades.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.pbCoin_Logo)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pb_Armor_Logo)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pb_Speed_Logo)).EndInit();
@@ -677,12 +779,17 @@
         private CuoreUI.Controls.cuiProgressBarHorizontal pbWeapon;
         private CuoreUI.Controls.cuiProgressBarHorizontal pbArmor;
         private CuoreUI.Controls.cuiProgressBarHorizontal pbSpeed;
-        private CuoreUI.Controls.cuiButton cuiButton2;
-        private CuoreUI.Controls.cuiButton cuiButton1;
-        private CuoreUI.Controls.cuiButton cuiButton3;
-        private CuoreUI.Controls.cuiButton cuiButton6;
-        private CuoreUI.Controls.cuiButton cuiButton5;
-        private CuoreUI.Controls.cuiButton cuiButton4;
+        private CuoreUI.Controls.cuiButton btnSubSpeed;
+        private CuoreUI.Controls.cuiButton btnAddSpeed;
+        private CuoreUI.Controls.cuiButton btnAddArmor;
+        private CuoreUI.Controls.cuiButton btnSubWeapon;
+        private CuoreUI.Controls.cuiButton btnAddWeapon;
+        private CuoreUI.Controls.cuiButton btnSubArmor;
         private CuoreUI.Controls.cuiButton btnBack;
+        private CuoreUI.Controls.cuiLabel lblSpeedPrice;
+        private CuoreUI.Controls.cuiLabel lblWeaponPrice;
+        private CuoreUI.Controls.cuiLabel lblArmorPrice;
+        private System.Windows.Forms.PictureBox pbCoin_Logo;
+        private CuoreUI.Controls.cuiLabel lblCoins;
     }
 }

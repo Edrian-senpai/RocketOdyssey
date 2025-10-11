@@ -222,7 +222,7 @@
             this.pbR_Logo.BackColor = System.Drawing.Color.Transparent;
             this.pbR_Logo.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
             this.pbR_Logo.Image = global::RocketOdyssey.Properties.Resources.Game_Logo;
-            this.pbR_Logo.Location = new System.Drawing.Point(233, 50);
+            this.pbR_Logo.Location = new System.Drawing.Point(218, 50);
             this.pbR_Logo.Name = "pbR_Logo";
             this.pbR_Logo.Size = new System.Drawing.Size(254, 133);
             this.pbR_Logo.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;

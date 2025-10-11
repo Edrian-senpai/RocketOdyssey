@@ -13,17 +13,16 @@ namespace RocketOdyssey
         // Background scrolling
         private Timer scrollTimer;
         private Image backgroundImage;
-        private int scrollSpeed = 1;          // Background scroll speed
-        private int scrollOffset = 0;
+        private int scrollSpeed = 1; // Background scroll speed
 
         // Player movement state
-        private bool controlsLocked = true; // Rocket controls disabled at start
+        private bool controlsLocked = true;
         private bool upPressed = false;
         private bool downPressed = false;
         private bool leftPressed = false;
         private bool rightPressed = false;
 
-        private int launchCountdown = 10;     // default
+        private int launchCountdown = 10;
         private Timer launchDelayTimer;
 
         // GIF sprites
@@ -33,40 +32,38 @@ namespace RocketOdyssey
         private Image landGif;
 
         // Movement settings
-        private int moveStep = 1;             // Rocket movement speed
+        private int moveStep = 1;
         private readonly int minX = 0;
         private readonly int minY = 140;
         private readonly int maxX = 650;
         private readonly int maxY = 550;
 
-        // Holds whichever sprite is currently active (idle/up/down)
+        // Active rocket sprite
         private Image currentRocketSprite;
-        private float currentRotation = 0f;   // in degrees
+        private float currentRotation = 0f;
 
-        // For saving user state later
+        // Player data
         private string currentUser;
-
-        // Player stats
         private int score = 0;
         private int coins = 0;
-        private int hp = 100;             // will be overridden by DB
-        private int fuel = 100;           // starts full, drains during play
+        private int hp = 100;
+        private int maxHP = 100;
+        private int fuel = 100;
         private int rocketSpeed = 0;
         private int rocketWeapon = 0;
 
-        // Rocket fuel Timer
-        private Timer fuelTimer;          // drains fuel periodically
+        // Weapon system
+        private bool weaponCharged = false;
+        private bool laserActive = false;
+        private PictureBox laserBeam;
+        private int laserDuration = 0;
 
-        // Fuel drain
-        private int fuelDrainRate = 1;       // how much fuel drains every tick
-        private int fuelDrainInterval = 1000; // every 1 second
+        private Timer fuelTimer;
+        private int fuelDrainRate = 1;
+        private int fuelDrainInterval = 1000;
 
-        // Movement timer
         private Timer moveTimer;
-
-        // NEW: tracks that the rocket has run out of fuel (prevents sprite changes)
         private bool isOutOfFuel = false;
-
         private PauseOverlayControl pauseOverlay;
         private bool isPaused = false;
 
@@ -75,93 +72,69 @@ namespace RocketOdyssey
             InitializeComponent();
             InitializeBackgrounds();
 
-            // Load current user from SessionManager
             currentUser = SessionManager.CurrentUsername;
 
-            // ---- Load player upgrades from DB ----
-            var (speed, armor, weapon) = DatabaseHelper.GetPlayerUpgrades(currentUser);
-            // Load coins from DB
+            // --- Load permanent upgrades ---
+            var (dbSpeed, dbArmor, dbWeapon) = DatabaseHelper.GetPlayerUpgrades(currentUser);
+
+            // --- Load temporary upgrades (from UpgradeControl screen) ---
+            var (tempSpeed, tempArmor, tempWeapon) = DatabaseHelper.GetTempUpgrades(currentUser);
+
+            // --- Prioritize TEMPORARY upgrades (even if they're base values) ---
+            bool hasTempData = !(tempSpeed == 0 && tempArmor == 0 && tempWeapon == 0);
+
+            if (hasTempData)
+            {
+                // Use whatever was last saved from the upgrade screen
+                rocketSpeed = tempSpeed;
+                maxHP = tempArmor > 0 ? tempArmor : dbArmor;  // if 0 accidentally saved, fallback
+                rocketWeapon = tempWeapon;
+            }
+            else
+            {
+                // Fallback to permanent upgrades
+                rocketSpeed = dbSpeed;
+                maxHP = dbArmor;
+                rocketWeapon = dbWeapon;
+            }
+
+
+            // ---- Load coins and other state ----
             coins = DatabaseHelper.GetPlayerCoins(currentUser);
+            hp = DatabaseHelper.LoadPlayerHP(currentUser);
+            fuel = DatabaseHelper.LoadPlayerFuel(currentUser);
 
-            rocketSpeed = speed;
-            hp = armor;
-            rocketWeapon = weapon;
+            // ---- HP Scaling with Armor ----
+            ApplyArmorUpgradeEffect();
 
-            // Restore rocket position & background stage from DB
+            pbFuel.MaxValue = 100;
+            pbFuel.Value = fuel;
+
+            pbWeapon.MaxValue = 100;
+            pbWeapon.Value = 0;
+            coins += 5000; // TEMP for testing
+            lblScore.Content = $"Score: {score}";
+            lblCoins.Content = $"{FormatCoins(coins)}";
+
+            // ---- Movement speed based on upgrade ----
+            moveStep += rocketSpeed;
+
+            // ---- Laser duration based on permanent or temp weapon ----
+            laserDuration = rocketWeapon * 5; // 5s per weapon level
+
+            // ---- Load player position & stage ----
             var (posX, posY, stageIdx, stageOffset) = DatabaseHelper.LoadPlayerState(currentUser);
             PlayerRocket.Location = new Point(posX, posY);
             currentStageIndex = stageIdx;
             currentStageOffset = stageOffset;
 
-            // Load saved fuel from DB
-            fuel = DatabaseHelper.LoadPlayerFuel(currentUser);
-            pbFuel.Value = fuel;
-
-            // Load saved HP from DB
-            hp = DatabaseHelper.LoadPlayerHP(currentUser);
-            pbHP.Value = hp;
-
-
-            // === Initialize UI ===
-            pbHP.MaxValue = 100;
-            pbHP.Value = hp;                     // start from DB or default
-            pbFuel.MaxValue = 100;
-            pbFuel.Value = fuel;                 // full at start
-
-            lblScore.Content = $"Score: {score}";
-            coins += 5;  // example: collected 5 coins
-            lblCoins.Content = $"{coins}";         // or load from DB if you have coins
-
-            // Adjust movement speed based on upgrade
-            moveStep += rocketSpeed; // default + upgrade bonus
-            
-
-            // ---- Launch countdown setup ----
-            launchCountdown = DatabaseHelper.LoadLaunchTimer(currentUser);
-
-            // Determine if player has meaningful progress
-            bool hasProgress =
-                   fuel < 100 || hp < 100
-                || currentStageIndex > 0
-                || currentStageOffset > 0;
-
-            // If player already has progress and no pending countdown → skip lock
-            if (hasProgress && launchCountdown == 0)
-            {
-                controlsLocked = false;
-            }
-            else
-            {
-                // Start or resume countdown
-                if (launchCountdown == 0)
-                    launchCountdown = 10; // fresh start
-
-                controlsLocked = true;
-                //lblLaunchCountdown.Visible = true;
-                //lblLaunchCountdown.Text = $"Launch in {launchCountdown}s";
-
-                launchDelayTimer = new Timer();
-                launchDelayTimer.Interval = 1000;
-                launchDelayTimer.Tick += LaunchDelayTimer_Tick;
-                launchDelayTimer.Start();
-            }
-
-
-            // ---- Background setup ----
-            backgroundImage = panelBackground.BackgroundImage;
-            panelBackground.Paint += panelBackground_Paint;
-            panelBackground.BackgroundImage = null;
-            SetDoubleBuffered(panelBackground);
-
-            // ---- Player sprite setup ----
+            // ---- Initialize rocket sprites ----
             idleGif = Properties.Resources.rocket_2_smol;
             upGif = Properties.Resources.rocket_2_smol_up;
             downGif = Properties.Resources.rocket_2_smol_down;
             landGif = Properties.Resources.rocket_2_land_smol;
 
             currentRocketSprite = idleGif;
-
-            // register all gifs for animation (including landing GIF)
             ImageAnimator.Animate(idleGif, OnFrameChanged);
             ImageAnimator.Animate(upGif, OnFrameChanged);
             ImageAnimator.Animate(downGif, OnFrameChanged);
@@ -171,34 +144,116 @@ namespace RocketOdyssey
             PlayerRocket.Paint += PlayerRocket_Paint;
             PlayerRocket.BackColor = Color.Transparent;
 
-            // Scroll timer (~60 FPS)
-            scrollTimer = new Timer();
-            scrollTimer.Interval = 16;
+            // ---- Launch countdown ----
+            launchCountdown = DatabaseHelper.LoadLaunchTimer(currentUser);
+            bool hasProgress = fuel < 100 || hp < maxHP || currentStageIndex > 0 || currentStageOffset > 0;
+            if (hasProgress && launchCountdown == 0)
+                controlsLocked = false;
+            else
+            {
+                if (launchCountdown == 0)
+                    launchCountdown = 10;
+
+                controlsLocked = true;
+                launchDelayTimer = new Timer();
+                launchDelayTimer.Interval = 1000;
+                launchDelayTimer.Tick += LaunchDelayTimer_Tick;
+                launchDelayTimer.Start();
+            }
+
+            // ---- Background setup ----
+            backgroundImage = panelBackground.BackgroundImage;
+            panelBackground.Paint += panelBackground_Paint;
+            panelBackground.BackgroundImage = null;
+            SetDoubleBuffered(panelBackground);
+
+            // ---- Rocket sprite setup ----
+            idleGif = Properties.Resources.rocket_2_smol;
+            upGif = Properties.Resources.rocket_2_smol_up;
+            downGif = Properties.Resources.rocket_2_smol_down;
+            landGif = Properties.Resources.rocket_2_land_smol;
+            currentRocketSprite = idleGif;
+
+            ImageAnimator.Animate(idleGif, OnFrameChanged);
+            ImageAnimator.Animate(upGif, OnFrameChanged);
+            ImageAnimator.Animate(downGif, OnFrameChanged);
+            ImageAnimator.Animate(landGif, OnFrameChanged);
+
+            PlayerRocket.Image = null;
+            PlayerRocket.Paint += PlayerRocket_Paint;
+            PlayerRocket.BackColor = Color.Transparent;
+
+            // ---- Timers ----
+            scrollTimer = new Timer { Interval = 16 };
             scrollTimer.Tick += ScrollTimer_Tick;
             scrollTimer.Start();
+
+            moveTimer = new Timer { Interval = 16 };
+            moveTimer.Tick += MoveTimer_Tick;
+            moveTimer.Start();
+
+            fuelTimer = new Timer { Interval = fuelDrainInterval };
+            fuelTimer.Tick += FuelTimer_Tick;
+            fuelTimer.Start();
 
             // ---- Input setup ----
             this.KeyDown += GameControl_KeyDown;
             this.KeyUp += GameControl_KeyUp;
             this.PreviewKeyDown += GameControl_PreviewKeyDown;
 
-
-
             this.SetStyle(ControlStyles.Selectable, true);
             this.TabStop = true;
             this.Focus();
+        }
+        private string FormatCoins(int coins)
+        {
+            if (coins >= 1_000_000) return $"{coins / 1_000_000.0:F1}M";
+            if (coins >= 1_000) return $"{coins / 1_000.0:F1}K";
+            return coins.ToString();
+        }
 
-            // ---- Movement timer ----
-            moveTimer = new Timer();
-            moveTimer.Interval = 16;
-            moveTimer.Tick += MoveTimer_Tick;
-            moveTimer.Start();
+        // ----------------------------------------
+        //   Dynamic HP Bar System
+        // ----------------------------------------
+        private void UpdateHPBarColor()
+        {
+            double ratio = (double)pbHP.Value / pbHP.MaxValue;
+            if (ratio > 0.75)
+                pbHP.ForeColor = Color.LimeGreen;
+            else if (ratio > 0.5)
+                pbHP.ForeColor = Color.YellowGreen;
+            else if (ratio > 0.25)
+                pbHP.ForeColor = Color.Orange;
+            else
+                pbHP.ForeColor = Color.Red;
+        }
 
-            // ---- Fuel timer ----
-            fuelTimer = new Timer();
-            fuelTimer.Interval = fuelDrainInterval;
-            fuelTimer.Tick += FuelTimer_Tick;
-            fuelTimer.Start();
+        // Call this whenever armor upgrade changes (optional if HP can increase mid-game)
+        private void UpdateHPBarMax(int newMaxHP)
+        {
+            double fillRatio = (double)pbHP.Value / pbHP.MaxValue;
+            pbHP.MaxValue = newMaxHP;
+            pbHP.Value = Math.Min((int)(fillRatio * pbHP.MaxValue), pbHP.MaxValue);
+            UpdateHPBarColor();
+        }
+
+        private void ApplyArmorUpgradeEffect()
+        {
+            // Each armor level beyond base (100 HP) adds +25 max HP
+            // Example: 100 (base), 125 (lv1), 150 (lv2), 175 (lv3), 200 (lv4)
+            int armorLevel = (maxHP - 100) / 25;
+            int newMaxHP = 100 + (armorLevel * 25);
+
+            // Increase current HP by same armor bonus (no overheal past max)
+            hp = Math.Min(hp + (armorLevel * 25), newMaxHP);
+
+            pbHP.MaxValue = newMaxHP;
+            pbHP.Value = Math.Min(hp, pbHP.MaxValue);
+            lblHP1.Content = $"HP: {pbHP.Value}/{pbHP.MaxValue}";
+            UpdateHPBarColor();
+
+            // Save to DB for persistence
+            DatabaseHelper.SavePlayerHP(currentUser, hp);
         }
 
         // ----------------------------------------
@@ -339,21 +394,41 @@ namespace RocketOdyssey
                 if (e.KeyCode == Keys.D || e.KeyCode == Keys.Right)
                     rightPressed = true;
 
-                if (leftPressed && rightPressed)
-                    currentRotation = 0f;
-                else if (leftPressed)
-                    currentRotation = -15f;
-                else if (rightPressed)
-                    currentRotation = 15f;
+                // Disable rotation while laser is active
+                if (!laserActive)
+                {
+                    if (leftPressed && rightPressed)
+                        currentRotation = 0f;
+                    else if (leftPressed)
+                        currentRotation = -15f;
+                    else if (rightPressed)
+                        currentRotation = 15f;
+                }
+                else
+                {
+                    currentRotation = 0f; // keep rocket steady
+                }
             }
 
             PlayerRocket.Invalidate();
+
+            // Simulate collecting a weapon core
+            if (e.KeyCode == Keys.B && !weaponCharged && rocketWeapon > 0)
+            {
+                ChargeWeapon();
+            }
+
+            // Activate laser if charged
+            if (e.KeyCode == Keys.L && weaponCharged && !laserActive && rocketWeapon > 0)
+            {
+                ActivateLaser();
+            }
         }
 
         private void GameControl_KeyUp(object sender, KeyEventArgs e)
         {
-            if (controlsLocked) return; // Ignore input during launch delay
-            if (isOutOfFuel) return;    // Prevent resetting sprite to idle after fuel runs out
+            if (controlsLocked) return;
+            if (isOutOfFuel) return;
 
             if (e.KeyCode == Keys.W || e.KeyCode == Keys.Up)
                 upPressed = false;
@@ -376,18 +451,27 @@ namespace RocketOdyssey
 
             if (fuel > 0)
             {
-                if (leftPressed && rightPressed)
-                    currentRotation = 0f;
-                else if (leftPressed)
-                    currentRotation = -15f;
-                else if (rightPressed)
-                    currentRotation = 15f;
+                // Keep rocket upright while laser is active
+                if (!laserActive)
+                {
+                    if (leftPressed && rightPressed)
+                        currentRotation = 0f;
+                    else if (leftPressed)
+                        currentRotation = -15f;
+                    else if (rightPressed)
+                        currentRotation = 15f;
+                    else
+                        currentRotation = 0f;
+                }
                 else
-                    currentRotation = 0f;
+                {
+                    currentRotation = 0f; // stay straight
+                }
             }
 
             PlayerRocket.Invalidate();
         }
+
 
         private void GameControl_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
         {
@@ -464,9 +548,12 @@ namespace RocketOdyssey
             PlayerRocket.Location = new Point(newX, newY);
         }
 
+        // ----------------------------------------
+        //   Fuel System
+        // ----------------------------------------
         private void FuelTimer_Tick(object sender, EventArgs e)
         {
-            if (isOutOfFuel) return; // nothing further once out of fuel
+            if (isOutOfFuel) return;
 
             if (fuel > 0)
             {
@@ -477,25 +564,23 @@ namespace RocketOdyssey
 
                 if (fuel == 0)
                 {
-                    // Mark as out of fuel so input handlers stop changing sprite/rotation
                     isOutOfFuel = true;
-
-                    // Switch sprite to landing (keep currentRotation as last set)
                     currentRocketSprite = landGif;
                     PlayerRocket.Invalidate();
-
-                    // Stop movement immediately, but let background scroll for 5s
                     moveTimer.Stop();
                     StartGameOverCountdown();
                 }
             }
         }
 
+        // ----------------------------------------
+        //   Game Over Sequence
+        // ----------------------------------------
         private void StartGameOverCountdown()
         {
             int countdown = 5;
             Timer countdownTimer = new Timer();
-            countdownTimer.Interval = 1000; // 1 second
+            countdownTimer.Interval = 1000;
             countdownTimer.Tick += (s, ev) =>
             {
                 countdown--;
@@ -504,39 +589,24 @@ namespace RocketOdyssey
                     countdownTimer.Stop();
                     scrollTimer.Stop();
 
-                    // Show Game Over dialog
                     MessageBox.Show("Out of fuel! Game Over.");
 
-                    // Check and update highscore before resetting
                     DatabaseHelper.UpdateHighScore(currentUser, score);
 
-                    // Reset all rocket stats to default
                     score = 0;
                     hp = 100;
                     fuel = 100;
-
-                    // Reset background/stage to default
                     currentStageIndex = 0;
                     currentStageOffset = 0;
-
-                    // Reset rocket position to default
                     PlayerRocket.Location = new Point(326, 510);
-
-                    // Reset launch countdown
                     launchCountdown = 10;
 
-                    // Save reset state
                     DatabaseHelper.SavePlayerFuel(currentUser, fuel);
                     DatabaseHelper.SavePlayerHP(currentUser, hp);
-                    DatabaseHelper.SavePlayerState(currentUser,
-                        PlayerRocket.Location.X,
-                        PlayerRocket.Location.Y,
-                        currentStageIndex,
-                        currentStageOffset);
+                    DatabaseHelper.SavePlayerState(currentUser, PlayerRocket.Location.X, PlayerRocket.Location.Y, currentStageIndex, currentStageOffset);
                     DatabaseHelper.SaveLaunchTimer(currentUser, launchCountdown);
                     DatabaseHelper.UpdateUpgrade(currentUser, "Score", score);
 
-                    // Go back to main menu
                     MainMenuControl menu = new MainMenuControl();
                     GameForm parentForm = (GameForm)this.FindForm();
                     parentForm.Controls.Clear();
@@ -546,6 +616,9 @@ namespace RocketOdyssey
             countdownTimer.Start();
         }
 
+        // ----------------------------------------
+        //   Launch Timer
+        // ----------------------------------------
         private void LaunchDelayTimer_Tick(object sender, EventArgs e)
         {
             launchCountdown--;
@@ -553,47 +626,49 @@ namespace RocketOdyssey
             if (launchCountdown <= 0)
             {
                 controlsLocked = false;
-                //lblLaunchCountdown.Visible = false;
-
                 launchDelayTimer.Stop();
-                DatabaseHelper.SaveLaunchTimer(currentUser, 0); // clear after finished
+                DatabaseHelper.SaveLaunchTimer(currentUser, 0);
             }
             else
             {
-                //lblLaunchCountdown.Text = $"Launch in {launchCountdown}s";
                 DatabaseHelper.SaveLaunchTimer(currentUser, launchCountdown);
             }
         }
 
+        // ----------------------------------------
+        //   Save Player Progress
+        // ----------------------------------------
         private void SavePlayerProgress()
         {
-            DatabaseHelper.UpdateUpgrade(currentUser, "RocketArmor", rocketSpeed);
-            DatabaseHelper.UpdateUpgrade(currentUser, "RocketSpeed", rocketSpeed);
-            DatabaseHelper.UpdateUpgrade(currentUser, "RocketWeapon", rocketWeapon);
-            DatabaseHelper.UpdateUpgrade(currentUser, "Score", score);
-            DatabaseHelper.UpdatePlayerCoins(currentUser, coins);
-
-            DatabaseHelper.SavePlayerState(
-                currentUser,
-                PlayerRocket.Location.X,
-                PlayerRocket.Location.Y,
-                currentStageIndex,
-                currentStageOffset
-            );
-
+            // Save runtime data
             DatabaseHelper.SavePlayerFuel(currentUser, fuel);
             DatabaseHelper.SavePlayerHP(currentUser, hp);
-
-            // ✅ save remaining launch countdown
+            DatabaseHelper.SavePlayerState(currentUser, PlayerRocket.Location.X, PlayerRocket.Location.Y, currentStageIndex, currentStageOffset);
             DatabaseHelper.SaveLaunchTimer(currentUser, launchCountdown);
+
+            // Save current temp upgrades for next play session
+            DatabaseHelper.SaveTempUpgrades(currentUser, rocketSpeed, maxHP, rocketWeapon);
+
+            // Coins and scores are permanent
+            DatabaseHelper.UpdatePlayerCoins(currentUser, coins);
+            DatabaseHelper.UpdateHighScore(currentUser, score);
         }
 
-
+        private void GameControl_Load(object sender, EventArgs e)
+        {
+            this.SetStyle(ControlStyles.Selectable, true);
+            this.TabStop = true;
+            this.Focus();
+        }
 
         private void GameControl_Enter(object sender, EventArgs e)
         {
             this.Focus();
         }
+
+        // ----------------------------------------
+        //   Pause Menu Handling
+        // ----------------------------------------
 
         private void btnPause_Click(object sender, EventArgs e)
         {
@@ -710,5 +785,105 @@ namespace RocketOdyssey
             parentForm.Controls.Add(menu);
         }
 
+        // ----------------------------------------
+        //   WEAPON SYSTEM
+        // ----------------------------------------
+
+        private void ChargeWeapon()
+        {
+            weaponCharged = true;
+            pbWeapon.Value = pbWeapon.MaxValue;
+
+            MessageBox.Show("Weapon charged!");
+        }
+
+        private void ActivateLaser()
+        {
+            if (rocketWeapon <= 0) return; // Weapon not unlocked
+
+            laserActive = true;
+            weaponCharged = false;
+
+            // === Duration based on weapon level ===
+            laserDuration = rocketWeapon * 4; // level 1 = 5s, +5s each level (-1s adjustment)
+            int totalDurationMs = laserDuration * 1000;
+            int updateInterval = 50; // 20fps
+            int elapsed = 0;
+
+            // --- Create laser beam sprite if not already ---
+            if (laserBeam == null)
+            {
+                laserBeam = new PictureBox
+                {
+                    Image = Properties.Resources.laser_beam,
+                    SizeMode = PictureBoxSizeMode.StretchImage,
+                    BackColor = Color.Transparent,
+                    Width = 50,
+                    Height = 300,
+                    Visible = false
+                };
+                panelBackground.Controls.Add(laserBeam);
+                laserBeam.BringToFront();
+
+                ImageAnimator.Animate(laserBeam.Image, OnFrameChanged);
+            }
+
+            laserBeam.Visible = true;
+            UpdateLaserPosition(laserBeam);
+
+            // --- Follow rocket fast ---
+            Timer laserFollowTimer = new Timer();
+            laserFollowTimer.Interval = 10;
+            laserFollowTimer.Tick += (s, e) =>
+            {
+                if (!laserActive)
+                {
+                    laserFollowTimer.Stop();
+                    return;
+                }
+                UpdateLaserPosition(laserBeam);
+            };
+            laserFollowTimer.Start();
+
+            // --- Unified Timer for both beam & bar ---
+            Timer laserSyncTimer = new Timer();
+            laserSyncTimer.Interval = updateInterval;
+            laserSyncTimer.Tick += (s, e) =>
+            {
+                elapsed += updateInterval;
+
+                // Progress ratio (0 → 1)
+                double progress = Math.Min(1.0, (double)elapsed / totalDurationMs);
+
+                // --- Progress bar drain ---
+                pbWeapon.Value = (int)(pbWeapon.MaxValue * (1 - progress));
+                pbWeapon.Refresh();
+
+                // --- End laser exactly when bar hits 0 ---
+                if (progress >= 1.0)
+                {
+                    pbWeapon.Value = 0;
+                    pbWeapon.Refresh();
+
+                    laserBeam.Visible = false;
+                    laserActive = false;
+                    laserSyncTimer.Stop();
+                }
+            };
+            laserSyncTimer.Start();
+        }
+
+        private void UpdateLaserPosition(PictureBox beam)
+        {
+            if (PlayerRocket == null || beam == null)
+                return;
+
+            int rocketCenterX = PlayerRocket.Left + (PlayerRocket.Width / 2) - (beam.Width / 2);
+            int rocketTipY = PlayerRocket.Top;
+            int beamHeight = Math.Max(10, rocketTipY);
+
+            beam.Height = beamHeight;
+            beam.Location = new Point(rocketCenterX, 0);
+        }
     }
 }

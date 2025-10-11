@@ -118,47 +118,41 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="Game_Logo" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Game_Logo.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="Atmosphere" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Atmoshphere.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="HomeBase" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\HomeBase.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="rocket_2_land_smol" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images&amp;Animations\rocket_2 animation\rocket_2_land_smol.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="rocket_2_smol" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images&amp;Animations\rocket_2 animation\rocket_2_smol.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="Orbit" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Orbit_fit.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Register_Logo" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Register_Logo.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="rocket_2_smol_up" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images&amp;Animations\rocket_2 animation\rocket_2_smol_up.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="showpass_icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\showpass_icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Speed_Logo" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Speed_Logo.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Upgrades_Logo" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Upgrades_Logo.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Leaderboards_Logo" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Leaderboards_Logo.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Pause_icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Pause_icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="HomeBase_old" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images&amp;Animations\Background\HomeBase.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="Armor" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Armor.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="OuterSpace" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\OuterSpace.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="laser_beam_long" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\laser-beam_long.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="hidepass_icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\hidepass_icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Login_Logo" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Login_Logo.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Pause_icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Pause_icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Pause_Logo" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Pause_Logo1.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="Atmosphere_long" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Atmoshphere_long.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Atmosphere" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Atmoshphere.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="Register_Logo" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Register_Logo.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Back_icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Back_icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -166,23 +160,35 @@
   <data name="OuterSpace_long" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\OuterSpace_long.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Login_Logo" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Login_Logo.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="Leaderboards_Logo" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Leaderboards_Logo.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Full_bg_final" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images&amp;Animations\Background\Full_bg_final.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Orbit" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Orbit_fit.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="HomeBase_old" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images&amp;Animations\Background\HomeBase.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="hidepass_icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\hidepass_icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="HomeBase" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\HomeBase.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="rocket_2_land_smol" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images&amp;Animations\rocket_2 animation\rocket_2_land_smol.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="rocket_2_smol_up" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images&amp;Animations\rocket_2 animation\rocket_2_smol_up.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Game_Logo" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Game_Logo.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="rocket_2_smol" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images&amp;Animations\rocket_2 animation\rocket_2_smol.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="rocket_2_smol_down" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images&amp;Animations\rocket_2 animation\rocket_2_smol_down.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Speed_Logo" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Speed_Logo.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="laser_beam" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\laser-beam-fit.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="MoonOrbit" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\MoonOrbit.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -190,10 +196,13 @@
   <data name="Weapon_Logo" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Weapon_Logo.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Armor" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Armor.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="showpass_icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\showpass_icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Pause_Logo" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Pause_Logo1.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="Upgrades_Logo" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Upgrades_Logo.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Weapon_icon2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Weapon_icon2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

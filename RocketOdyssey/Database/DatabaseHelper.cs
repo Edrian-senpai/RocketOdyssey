@@ -20,7 +20,8 @@ namespace RocketOdyssey.Database
             {
                 conn.Open();
 
-                string createTable = @"
+                // Main Users table
+                string createUsersTable = @"
                 CREATE TABLE IF NOT EXISTS Users (
                     UserID              INTEGER PRIMARY KEY AUTOINCREMENT,
                     Username            TEXT NOT NULL UNIQUE,
@@ -39,7 +40,22 @@ namespace RocketOdyssey.Database
                     CurrentHP           INTEGER DEFAULT 100,
                     LaunchTimerRemaining INTEGER DEFAULT 0  
                 );";
-                using (var cmd = new SQLiteCommand(createTable, conn))
+                using (var cmd = new SQLiteCommand(createUsersTable, conn))
+                {
+                    cmd.ExecuteNonQuery();
+                }
+
+                // Temporary upgrades table
+                string createTempUpgradesTable = @"
+                CREATE TABLE IF NOT EXISTS TempUpgrades (
+                    TempID        INTEGER PRIMARY KEY AUTOINCREMENT,
+                    Username      TEXT NOT NULL UNIQUE,
+                    TempSpeed     INTEGER DEFAULT 0,
+                    TempArmor     INTEGER DEFAULT 100,
+                    TempWeapon    INTEGER DEFAULT 0,
+                    FOREIGN KEY (Username) REFERENCES Users(Username)
+                );";
+                using (var cmd = new SQLiteCommand(createTempUpgradesTable, conn))
                 {
                     cmd.ExecuteNonQuery();
                 }
@@ -51,7 +67,7 @@ namespace RocketOdyssey.Database
             return new SQLiteConnection(connectionString);
         }
 
-        // Register new user
+        // Register new user + default TempUpgrades row
         public static bool RegisterUser(string username, string password)
         {
             try
@@ -59,17 +75,32 @@ namespace RocketOdyssey.Database
                 using (var conn = GetConnection())
                 {
                     conn.Open();
-                    string insertQuery = @"
-                        INSERT INTO Users (Username, PasswordHash)
-                        VALUES (@username, @password);";
 
-                    using (var cmd = new SQLiteCommand(insertQuery, conn))
+                    using (var transaction = conn.BeginTransaction())
                     {
-                        cmd.Parameters.AddWithValue("@username", username);
-                        cmd.Parameters.AddWithValue("@password", password);
-                        cmd.ExecuteNonQuery();
-                        return true;
+                        string insertUser = @"
+                            INSERT INTO Users (Username, PasswordHash)
+                            VALUES (@username, @password);";
+                        using (var cmd = new SQLiteCommand(insertUser, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@username", username);
+                            cmd.Parameters.AddWithValue("@password", password);
+                            cmd.ExecuteNonQuery();
+                        }
+
+                        string insertTemp = @"
+                            INSERT INTO TempUpgrades (Username)
+                            VALUES (@username);";
+                        using (var cmd = new SQLiteCommand(insertTemp, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@username", username);
+                            cmd.ExecuteNonQuery();
+                        }
+
+                        transaction.Commit();
                     }
+
+                    return true;
                 }
             }
             catch (SQLiteException ex)
@@ -100,16 +131,16 @@ namespace RocketOdyssey.Database
             }
         }
 
-        // Fetch the current upgrades for a player
+        // === UPGRADE HANDLING ===
+
         public static (int speed, int armor, int weapon) GetPlayerUpgrades(string username)
         {
             using (var conn = GetConnection())
             {
                 conn.Open();
                 string query = @"SELECT RocketSpeed, RocketArmor, RocketWeapon
-                         FROM Users
-                         WHERE Username = @username";
-
+                                 FROM Users
+                                 WHERE Username = @username";
                 using (var cmd = new SQLiteCommand(query, conn))
                 {
                     cmd.Parameters.AddWithValue("@username", username);
@@ -125,10 +156,9 @@ namespace RocketOdyssey.Database
                     }
                 }
             }
-            return (0, 100, 0); // defaults if user not found
+            return (0, 100, 0);
         }
 
-        // Update a single upgrade field
         public static void UpdateUpgrade(string username, string fieldName, int newValue)
         {
             using (var conn = GetConnection())
@@ -144,22 +174,73 @@ namespace RocketOdyssey.Database
             }
         }
 
-        // Reset the player's progress to defaults
+        // === TEMPORARY UPGRADES ===
+
+        public static void SaveTempUpgrades(string username, int tempSpeed, int tempArmor, int tempWeapon)
+        {
+            using (var conn = GetConnection())
+            {
+                conn.Open();
+                string query = @"
+                    INSERT INTO TempUpgrades (Username, TempSpeed, TempArmor, TempWeapon)
+                    VALUES (@username, @speed, @armor, @weapon)
+                    ON CONFLICT(Username) DO UPDATE SET
+                        TempSpeed = excluded.TempSpeed,
+                        TempArmor = excluded.TempArmor,
+                        TempWeapon = excluded.TempWeapon;";
+                using (var cmd = new SQLiteCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@username", username);
+                    cmd.Parameters.AddWithValue("@speed", tempSpeed);
+                    cmd.Parameters.AddWithValue("@armor", tempArmor);
+                    cmd.Parameters.AddWithValue("@weapon", tempWeapon);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        public static (int speed, int armor, int weapon) GetTempUpgrades(string username)
+        {
+            using (var conn = GetConnection())
+            {
+                conn.Open();
+                string query = @"SELECT TempSpeed, TempArmor, TempWeapon 
+                                 FROM TempUpgrades WHERE Username = @username";
+                using (var cmd = new SQLiteCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@username", username);
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            int speed = Convert.ToInt32(reader["TempSpeed"]);
+                            int armor = Convert.ToInt32(reader["TempArmor"]);
+                            int weapon = Convert.ToInt32(reader["TempWeapon"]);
+                            return (speed, armor, weapon);
+                        }
+                    }
+                }
+            }
+            return (0, 100, 0);
+        }
+
+        // === PLAYER STATE ===
+
         public static void ResetPlayerProgress(string username)
         {
             using (var conn = GetConnection())
             {
                 conn.Open();
                 string query = @"
-            UPDATE Users SET 
-                RocketPosX = 326, 
-                RocketPosY = 510,
-                BackgroundStage = 0,
-                StageOffset = 0,
-                FuelRemaining = 100,
-                CurrentHP = 100,
-                LaunchTimerRemaining = 10
-            WHERE Username = @username";
+                    UPDATE Users SET 
+                        RocketPosX = 326, 
+                        RocketPosY = 510,
+                        BackgroundStage = 0,
+                        StageOffset = 0,
+                        FuelRemaining = 100,
+                        CurrentHP = 100,
+                        LaunchTimerRemaining = 10
+                    WHERE Username = @username";
                 using (var cmd = new SQLiteCommand(query, conn))
                 {
                     cmd.Parameters.AddWithValue("@username", username);
@@ -168,7 +249,6 @@ namespace RocketOdyssey.Database
             }
         }
 
-        // Get player's HighScore
         public static int GetHighScore(string username)
         {
             using (var conn = GetConnection())
@@ -184,7 +264,6 @@ namespace RocketOdyssey.Database
             }
         }
 
-        // Update player's HighScore only if it's higher than existing
         public static void UpdateHighScore(string username, int newScore)
         {
             int currentHigh = GetHighScore(username);
@@ -204,7 +283,6 @@ namespace RocketOdyssey.Database
             }
         }
 
-        // Get player's coin balance
         public static int GetPlayerCoins(string username)
         {
             using (var conn = GetConnection())
@@ -220,7 +298,6 @@ namespace RocketOdyssey.Database
             }
         }
 
-        // Update player's coin balance
         public static void UpdatePlayerCoins(string username, int newCoins)
         {
             using (var conn = GetConnection())
@@ -236,17 +313,15 @@ namespace RocketOdyssey.Database
             }
         }
 
-        // Save rocket position and background stage
         public static void SavePlayerState(string username, int posX, int posY, int stageIndex, int stageOffset)
         {
             using (var conn = GetConnection())
             {
                 conn.Open();
                 string query = @"UPDATE Users 
-                         SET RocketPosX = @x, RocketPosY = @y, 
-                             BackgroundStage = @stage, StageOffset = @offset
-                         WHERE Username = @username";
-
+                                 SET RocketPosX = @x, RocketPosY = @y, 
+                                     BackgroundStage = @stage, StageOffset = @offset
+                                 WHERE Username = @username";
                 using (var cmd = new SQLiteCommand(query, conn))
                 {
                     cmd.Parameters.AddWithValue("@x", posX);
@@ -259,15 +334,13 @@ namespace RocketOdyssey.Database
             }
         }
 
-        // Load rocket position and background stage
         public static (int posX, int posY, int stageIndex, int stageOffset) LoadPlayerState(string username)
         {
             using (var conn = GetConnection())
             {
                 conn.Open();
                 string query = @"SELECT RocketPosX, RocketPosY, BackgroundStage, StageOffset 
-                         FROM Users WHERE Username = @username";
-
+                                 FROM Users WHERE Username = @username";
                 using (var cmd = new SQLiteCommand(query, conn))
                 {
                     cmd.Parameters.AddWithValue("@username", username);
@@ -284,11 +357,9 @@ namespace RocketOdyssey.Database
                     }
                 }
             }
-
-            return (326, 510, 0, 0); // defaults
+            return (326, 510, 0, 0);
         }
 
-        // Save fuel
         public static void SavePlayerFuel(string username, int fuel)
         {
             using (var conn = GetConnection())
@@ -304,7 +375,6 @@ namespace RocketOdyssey.Database
             }
         }
 
-        // Load fuel
         public static int LoadPlayerFuel(string username)
         {
             using (var conn = GetConnection())
@@ -315,12 +385,11 @@ namespace RocketOdyssey.Database
                 {
                     cmd.Parameters.AddWithValue("@username", username);
                     object result = cmd.ExecuteScalar();
-                    return result != null ? Convert.ToInt32(result) : 100; // default to full fuel
+                    return result != null ? Convert.ToInt32(result) : 100;
                 }
             }
         }
 
-        // Save current HP
         public static void SavePlayerHP(string username, int hp)
         {
             using (var conn = GetConnection())
@@ -336,7 +405,6 @@ namespace RocketOdyssey.Database
             }
         }
 
-        // Load current HP
         public static int LoadPlayerHP(string username)
         {
             using (var conn = GetConnection())
@@ -347,12 +415,11 @@ namespace RocketOdyssey.Database
                 {
                     cmd.Parameters.AddWithValue("@username", username);
                     object result = cmd.ExecuteScalar();
-                    return result != null ? Convert.ToInt32(result) : 100; // default full HP
+                    return result != null ? Convert.ToInt32(result) : 100;
                 }
             }
         }
 
-        // save remaining launch timer
         public static void SaveLaunchTimer(string username, int secondsRemaining)
         {
             using (var conn = GetConnection())
@@ -368,7 +435,6 @@ namespace RocketOdyssey.Database
             }
         }
 
-        // Load remaining launch timer
         public static int LoadLaunchTimer(string username)
         {
             using (var conn = GetConnection())
@@ -383,6 +449,5 @@ namespace RocketOdyssey.Database
                 }
             }
         }
-
     }
 }

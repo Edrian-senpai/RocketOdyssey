@@ -30,6 +30,8 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(GameControl));
             this.panelBackground = new System.Windows.Forms.Panel();
+            this.pbWeapon_Logo = new System.Windows.Forms.PictureBox();
+            this.pbWeapon = new CuoreUI.Controls.cuiProgressBarHorizontal();
             this.btnPause = new CuoreUI.Controls.cuiButton();
             this.pbCoin_Logo = new System.Windows.Forms.PictureBox();
             this.lblCoins = new CuoreUI.Controls.cuiLabel();
@@ -39,7 +41,9 @@
             this.pbFuel_Logo = new System.Windows.Forms.PictureBox();
             this.pbFuel = new CuoreUI.Controls.cuiProgressBarHorizontal();
             this.PlayerRocket = new System.Windows.Forms.PictureBox();
+            this.lblHP1 = new CuoreUI.Controls.cuiLabel();
             this.panelBackground.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbWeapon_Logo)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbCoin_Logo)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbHP_Logo)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbFuel_Logo)).BeginInit();
@@ -51,21 +55,52 @@
             this.panelBackground.BackColor = System.Drawing.Color.Transparent;
             this.panelBackground.BackgroundImage = global::RocketOdyssey.Properties.Resources.Full_bg_final;
             this.panelBackground.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
+            this.panelBackground.Controls.Add(this.pbWeapon_Logo);
+            this.panelBackground.Controls.Add(this.pbWeapon);
             this.panelBackground.Controls.Add(this.btnPause);
             this.panelBackground.Controls.Add(this.pbCoin_Logo);
             this.panelBackground.Controls.Add(this.lblCoins);
             this.panelBackground.Controls.Add(this.lblScore);
             this.panelBackground.Controls.Add(this.pbHP_Logo);
-            this.panelBackground.Controls.Add(this.pbHP);
             this.panelBackground.Controls.Add(this.pbFuel_Logo);
             this.panelBackground.Controls.Add(this.pbFuel);
             this.panelBackground.Controls.Add(this.PlayerRocket);
+            this.panelBackground.Controls.Add(this.lblHP1);
+            this.panelBackground.Controls.Add(this.pbHP);
             this.panelBackground.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelBackground.Location = new System.Drawing.Point(0, 0);
             this.panelBackground.Name = "panelBackground";
             this.panelBackground.Size = new System.Drawing.Size(720, 720);
             this.panelBackground.TabIndex = 0;
             this.panelBackground.Paint += new System.Windows.Forms.PaintEventHandler(this.panelBackground_Paint);
+            // 
+            // pbWeapon_Logo
+            // 
+            this.pbWeapon_Logo.BackColor = System.Drawing.Color.Transparent;
+            this.pbWeapon_Logo.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("pbWeapon_Logo.BackgroundImage")));
+            this.pbWeapon_Logo.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.pbWeapon_Logo.Location = new System.Drawing.Point(545, 48);
+            this.pbWeapon_Logo.Name = "pbWeapon_Logo";
+            this.pbWeapon_Logo.Size = new System.Drawing.Size(53, 30);
+            this.pbWeapon_Logo.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.pbWeapon_Logo.TabIndex = 28;
+            this.pbWeapon_Logo.TabStop = false;
+            this.pbWeapon_Logo.WaitOnLoad = true;
+            // 
+            // pbWeapon
+            // 
+            this.pbWeapon.Background = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            this.pbWeapon.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.pbWeapon.Flipped = false;
+            this.pbWeapon.Foreground = System.Drawing.Color.DarkGoldenrod;
+            this.pbWeapon.Location = new System.Drawing.Point(600, 48);
+            this.pbWeapon.MaxValue = 100;
+            this.pbWeapon.Name = "pbWeapon";
+            this.pbWeapon.Rounding = 8;
+            this.pbWeapon.Size = new System.Drawing.Size(95, 30);
+            this.pbWeapon.TabIndex = 27;
+            this.pbWeapon.TabStop = false;
+            this.pbWeapon.Value = 0;
             // 
             // btnPause
             // 
@@ -113,7 +148,7 @@
             this.pbCoin_Logo.BackColor = System.Drawing.Color.Transparent;
             this.pbCoin_Logo.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("pbCoin_Logo.BackgroundImage")));
             this.pbCoin_Logo.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.pbCoin_Logo.Location = new System.Drawing.Point(560, 5);
+            this.pbCoin_Logo.Location = new System.Drawing.Point(542, 0);
             this.pbCoin_Logo.Name = "pbCoin_Logo";
             this.pbCoin_Logo.Size = new System.Drawing.Size(56, 33);
             this.pbCoin_Logo.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
@@ -127,10 +162,10 @@
             this.lblCoins.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblCoins.ForeColor = System.Drawing.Color.White;
             this.lblCoins.HorizontalAlignment = System.Drawing.StringAlignment.Near;
-            this.lblCoins.Location = new System.Drawing.Point(613, 8);
+            this.lblCoins.Location = new System.Drawing.Point(600, 3);
             this.lblCoins.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.lblCoins.Name = "lblCoins";
-            this.lblCoins.Size = new System.Drawing.Size(107, 30);
+            this.lblCoins.Size = new System.Drawing.Size(97, 30);
             this.lblCoins.TabIndex = 21;
             this.lblCoins.TabStop = false;
             this.lblCoins.VerticalAlignment = System.Drawing.StringAlignment.Center;
@@ -225,6 +260,21 @@
             this.PlayerRocket.WaitOnLoad = true;
             this.PlayerRocket.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.GameControl_PreviewKeyDown);
             // 
+            // lblHP1
+            // 
+            this.lblHP1.BackColor = System.Drawing.Color.Transparent;
+            this.lblHP1.Content = "---";
+            this.lblHP1.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblHP1.ForeColor = System.Drawing.Color.White;
+            this.lblHP1.HorizontalAlignment = System.Drawing.StringAlignment.Center;
+            this.lblHP1.Location = new System.Drawing.Point(4, 147);
+            this.lblHP1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.lblHP1.Name = "lblHP1";
+            this.lblHP1.Size = new System.Drawing.Size(183, 30);
+            this.lblHP1.TabIndex = 29;
+            this.lblHP1.TabStop = false;
+            this.lblHP1.VerticalAlignment = System.Drawing.StringAlignment.Near;
+            // 
             // GameControl
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Inherit;
@@ -234,9 +284,10 @@
             this.DoubleBuffered = true;
             this.Name = "GameControl";
             this.Size = new System.Drawing.Size(720, 720);
-            this.Enter += new System.EventHandler(this.GameControl_Enter);
+            this.Load += new System.EventHandler(this.GameControl_Load);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.GameControl_KeyDown);
             this.panelBackground.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.pbWeapon_Logo)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbCoin_Logo)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbHP_Logo)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbFuel_Logo)).EndInit();
@@ -257,5 +308,8 @@
         private CuoreUI.Controls.cuiLabel lblCoins;
         private System.Windows.Forms.PictureBox pbCoin_Logo;
         private CuoreUI.Controls.cuiButton btnPause;
+        private System.Windows.Forms.PictureBox pbWeapon_Logo;
+        private CuoreUI.Controls.cuiProgressBarHorizontal pbWeapon;
+        private CuoreUI.Controls.cuiLabel lblHP1;
     }
 }
