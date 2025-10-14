@@ -246,23 +246,45 @@ namespace RocketOdyssey.Database
             using (var conn = GetConnection())
             {
                 conn.Open();
-                string query = @"
-                    UPDATE Users SET 
-                        RocketPosX = 326, 
-                        RocketPosY = 510,
-                        BackgroundStage = 0,
-                        StageOffset = 0,
-                        FuelRemaining = 100,
-                        CurrentHP = 100,
-                        LaunchTimerRemaining = 10
-                    WHERE Username = @username";
-                using (var cmd = new SQLiteCommand(query, conn))
+                using (var transaction = conn.BeginTransaction())
                 {
-                    cmd.Parameters.AddWithValue("@username", username);
-                    cmd.ExecuteNonQuery();
+                    // --- Reset player position, stats, and launch timer ---
+                    string resetUserQuery = @"
+                UPDATE Users SET 
+                    RocketPosX = 326, 
+                    RocketPosY = 510,
+                    BackgroundStage = 0,
+                    StageOffset = 0,
+                    FuelRemaining = 100,
+                    CurrentHP = 100,
+                    LaunchTimerRemaining = 10
+                WHERE Username = @username;";
+                    using (var cmd = new SQLiteCommand(resetUserQuery, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@username", username);
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    // --- Reset sound state table ---
+                    string resetSoundQuery = @"
+                INSERT INTO SoundState (Username, BgMusicTime, LaserActive, LaserTimeLeft)
+                VALUES (@username, 0, 0, 0)
+                ON CONFLICT(Username)
+                DO UPDATE SET 
+                    BgMusicTime = 0,
+                    LaserActive = 0,
+                    LaserTimeLeft = 0;";
+                    using (var cmd = new SQLiteCommand(resetSoundQuery, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@username", username);
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    transaction.Commit();
                 }
             }
         }
+
 
         public static int GetHighScore(string username)
         {

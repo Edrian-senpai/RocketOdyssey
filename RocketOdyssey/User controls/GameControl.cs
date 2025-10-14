@@ -13,6 +13,11 @@ namespace RocketOdyssey
 {
     public partial class GameControl : UserControl
     {
+        // Launch countdown display
+        private Label lblLaunchCountdown;
+        private Timer visibleCountdownTimer;
+        private int visibleCountdown = 5;
+
         // Background scrolling
         private Timer scrollTimer;
         private Image backgroundImage;
@@ -96,6 +101,23 @@ namespace RocketOdyssey
 
             currentUser = SessionManager.CurrentUsername;
 
+            // ---- Visible Launch Countdown Label ----
+            lblLaunchCountdown = new Label
+            {
+                Text = "5",
+                Font = new Font("Consolas", 72, FontStyle.Bold),
+                ForeColor = Color.Gold,
+                BackColor = Color.Transparent,
+                AutoSize = true,
+                Visible = false
+            };
+            panelBackground.Controls.Add(lblLaunchCountdown);
+            lblLaunchCountdown.BringToFront();
+            lblLaunchCountdown.Location = new Point(
+                (panelBackground.Width - lblLaunchCountdown.Width) / 2,
+                (panelBackground.Height / 2) - 100
+            );
+
             // --- Load permanent upgrades ---
             var (dbSpeed, dbArmor, dbWeapon) = DatabaseHelper.GetPlayerUpgrades(currentUser);
 
@@ -118,6 +140,18 @@ namespace RocketOdyssey
                 rocketSpeed = dbSpeed;
                 maxHP = dbArmor;
                 rocketWeapon = dbWeapon;
+            }
+
+            // ---- Hide weapon bar and logo if no weapon upgrade ----
+            if (rocketWeapon <= 0)
+            {
+                pbWeapon.Visible = false;
+                pbWeapon_Logo.Visible = false;
+            }
+            else
+            {
+                pbWeapon.Visible = true;
+                pbWeapon_Logo.Visible = true;
             }
 
             // ---- Load coins and other state ----
@@ -164,23 +198,6 @@ namespace RocketOdyssey
             PlayerRocket.Image = null;
             PlayerRocket.Paint += PlayerRocket_Paint;
             PlayerRocket.BackColor = Color.Transparent;
-
-            // ---- Launch countdown ----
-            launchCountdown = DatabaseHelper.LoadLaunchTimer(currentUser);
-            bool hasProgress = fuel < 100 || hp < maxHP || currentStageIndex > 0 || currentStageOffset > 0;
-            if (hasProgress && launchCountdown == 0)
-                controlsLocked = false;
-            else
-            {
-                if (launchCountdown == 0)
-                    launchCountdown = 10;
-
-                controlsLocked = true;
-                launchDelayTimer = new Timer();
-                launchDelayTimer.Interval = 1000;
-                launchDelayTimer.Tick += LaunchDelayTimer_Tick;
-                launchDelayTimer.Start();
-            }
 
             // ---- Load sound state ----
 
@@ -260,6 +277,107 @@ namespace RocketOdyssey
             fuelTimer = new Timer { Interval = fuelDrainInterval };
             fuelTimer.Tick += FuelTimer_Tick;
             fuelTimer.Start();
+
+            // --- Launch countdown logic with re-entry pause system ---
+
+            // Load launch countdown from DB
+            launchCountdown = DatabaseHelper.LoadLaunchTimer(currentUser);
+            bool hasProgress = fuel < 100 || hp < maxHP || currentStageIndex > 0 || currentStageOffset > 0;
+
+            if (hasProgress && launchCountdown == 0)
+            {
+                // --- Player already finished the launch ---
+                // Check if player left after finishing the launch and is returning later
+                if (DatabaseHelper.LoadLaunchTimer(currentUser) == 0)
+                {
+                    // Show a 5-second re-entry countdown (game fully paused)
+                    int reentryCountdown = 5;
+                    lblLaunchCountdown.Text = reentryCountdown.ToString();
+                    lblLaunchCountdown.Visible = true;
+                    currentRocketSprite = landGif;
+
+                    SetGamePaused(true);
+
+                    Timer reentryTimer = new Timer { Interval = 1000 };
+                    reentryTimer.Tick += (s, ev) =>
+                    {
+                        reentryCountdown--;
+
+                        if (reentryCountdown > 0)
+                        {
+                            lblLaunchCountdown.Text = reentryCountdown.ToString();
+                            lblLaunchCountdown.Left = (panelBackground.Width - lblLaunchCountdown.Width) / 2;
+                        }
+                        else
+                        {
+                            reentryTimer.Stop();
+                            lblLaunchCountdown.Visible = false;
+                            currentRocketSprite = idleGif;
+                            PlayerRocket.Invalidate();
+
+                            SetGamePaused(false);
+                        }
+                    };
+                    reentryTimer.Start();
+                }
+
+                controlsLocked = false;
+            }
+            else
+            {
+                if (launchCountdown == 0)
+                    launchCountdown = 10;
+
+                controlsLocked = true;
+
+                // --- Prevent saving while countdown is active ---
+                SessionManager.IsLaunchCountdownActive = true;
+
+                // --- Launch countdown (10s total, first 5s visible) ---
+                visibleCountdown = 5;
+                lblLaunchCountdown.Text = visibleCountdown.ToString();
+                lblLaunchCountdown.Visible = true;
+                currentRocketSprite = landGif;
+
+                scrollTimer?.Stop();
+
+                visibleCountdownTimer = new Timer { Interval = 1000 };
+                visibleCountdownTimer.Tick += (s, ev) =>
+                {
+                    visibleCountdown--;
+                    if (visibleCountdown > 0)
+                    {
+                        lblLaunchCountdown.Text = visibleCountdown.ToString();
+                        lblLaunchCountdown.Left = (panelBackground.Width - lblLaunchCountdown.Width) / 2;
+                    }
+                    else
+                    {
+                        visibleCountdownTimer.Stop();
+                        lblLaunchCountdown.Visible = false;
+                        currentRocketSprite = idleGif;
+                        PlayerRocket.Invalidate();
+                        scrollTimer?.Start();
+                    }
+                };
+                visibleCountdownTimer.Start();
+
+                // --- Full 10-second countdown ---
+                launchDelayTimer = new Timer { Interval = 1000 };
+                launchDelayTimer.Tick += (s, ev) =>
+                {
+                    launchCountdown--;
+                    DatabaseHelper.SaveLaunchTimer(currentUser, launchCountdown);
+
+                    if (launchCountdown <= 0)
+                    {
+                        launchDelayTimer.Stop();
+                        controlsLocked = false;
+                        SessionManager.IsLaunchCountdownActive = false;
+                    }
+                };
+                launchDelayTimer.Start();
+            }
+
 
             // ---- Input setup ----
             this.KeyDown += GameControl_KeyDown;
@@ -737,6 +855,10 @@ namespace RocketOdyssey
         // ----------------------------------------
         private void SavePlayerProgress()
         {
+            // Skip saving if countdown still active
+            if (SessionManager.IsLaunchCountdownActive)
+                return;
+
             // Save runtime data
             DatabaseHelper.SavePlayerFuel(currentUser, fuel);
             DatabaseHelper.SavePlayerHP(currentUser, hp);
@@ -904,7 +1026,7 @@ namespace RocketOdyssey
             // stop both bg and laser
             StopAllSounds();
 
-            // 🔹 Reset music timeline to 0 before starting a new game
+            // Reset music timeline to 0 before starting a new game
             bgMusicTime = 0;
             DatabaseHelper.SaveSoundState(
                 currentUser,
@@ -930,14 +1052,23 @@ namespace RocketOdyssey
 
         private void OnMainMenuClicked()
         {
-            // if countdown is active, save the remaining seconds
-            if (launchDelayTimer != null && launchDelayTimer.Enabled)
+            // If countdown is still active (not yet finished)
+            if (launchCountdown > 0 && launchCountdown < 10)
             {
-                launchDelayTimer.Stop();  // stop it so it doesn’t tick after leaving
+                // reset player progress in DB before starting a new game
+                DatabaseHelper.ResetPlayerProgress(currentUser);
+
+                // stop both bg and laser
+                StopAllSounds();
+            }
+            else if (launchDelayTimer != null && launchDelayTimer.Enabled)
+            {
+                // Otherwise, just save the remaining seconds normally
+                launchDelayTimer.Stop();
                 DatabaseHelper.SaveLaunchTimer(currentUser, launchCountdown);
             }
 
-            // Save sound state before leaving or pausing
+            // Save sound state before leaving
             if (bgReader != null)
                 bgMusicTime = bgReader.CurrentTime.TotalSeconds;
 
@@ -948,15 +1079,16 @@ namespace RocketOdyssey
                 laserTimeLeft
             );
 
-            StopAllSounds(); // stop both bg and laser
-            SavePlayerProgress(); // also saves fuel, hp, etc.
+            StopAllSounds();         // stop both bg and laser
+            SavePlayerProgress();    // save HP, fuel, etc.
 
-            // back to menu
+            // Back to menu
             MainMenuControl menu = new MainMenuControl();
             GameForm parentForm = (GameForm)this.FindForm();
             parentForm.Controls.Clear();
             parentForm.Controls.Add(menu);
         }
+
         private void SetGamePaused(bool pause)
         {
             isPaused = pause;

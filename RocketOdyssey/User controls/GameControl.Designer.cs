@@ -259,6 +259,7 @@
             this.lblHP1.TabIndex = 29;
             this.lblHP1.TabStop = false;
             this.lblHP1.VerticalAlignment = System.Drawing.StringAlignment.Near;
+            this.lblHP1.Visible = false;
             // 
             // pbHP
             // 
