@@ -63,6 +63,26 @@ namespace RocketOdyssey.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap AirBalloon_smol {
+            get {
+                object obj = ResourceManager.GetObject("AirBalloon_smol", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Airplane_smol {
+            get {
+                object obj = ResourceManager.GetObject("Airplane_smol", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap Armor {
             get {
                 object obj = ResourceManager.GetObject("Armor", resourceCulture);

@@ -90,6 +90,12 @@ namespace RocketOdyssey
         private double bgMusicTime = 0;
         private double laserTimeLeft = 0;
 
+        // === Tier 1 Obstacle System ===
+        private Timer obstacleSpawnTimer;
+        private Random obstacleRand = new Random();
+        private DateTime lastSpawnTime = DateTime.MinValue;
+        private int lastSpawnY = -1;
+
         private bool focusRecoveryEnabled = true;
 
         public GameControl()
@@ -277,6 +283,28 @@ namespace RocketOdyssey
             fuelTimer = new Timer { Interval = fuelDrainInterval };
             fuelTimer.Tick += FuelTimer_Tick;
             fuelTimer.Start();
+
+            // === Tier 1 Obstacle Spawner (spawn 4..8 obstacles each event) ===
+            obstacleSpawnTimer = new Timer();
+            obstacleSpawnTimer.Interval = obstacleRand.Next(3000, 6001); // random 3–6s
+            obstacleSpawnTimer.Tick += (s, e) =>
+            {
+                // spawn a small group of obstacles at once (2..5)
+                int batchCount = obstacleRand.Next(3, 6); // 3..6 inclusive
+                for (int i = 0; i < batchCount; i++)
+                {
+                    // small delay between creation attempts helps spread them vertically,
+                    // but we're synchronous here; SpawnRandomObstacle's internal
+                    // spacing attempt prevents close stacking.
+                    SpawnRandomObstacle();
+                }
+
+                // Re-randomize the next spawn delay
+                obstacleSpawnTimer.Interval = obstacleRand.Next(4000, 8001);
+            };
+            obstacleSpawnTimer.Start();
+
+
 
             // --- Launch countdown logic with re-entry pause system ---
 
@@ -1597,6 +1625,244 @@ namespace RocketOdyssey
                 bgMusicPlaying = false;
             }
             catch { /* Ignore disposal errors */ }
+        }
+
+        // =====================================================
+        //  OBSTACLE SYSTEM (Tier 1 Atmosphere to orbit)
+        // =====================================================
+
+        private void ObstacleSpawnTimer_Tick(object sender, EventArgs e)
+        {
+            // Pause spawning while controls locked or launch countdown active (adjust flag name if you used a different one)
+            // If you don't have SessionManager.IsLaunchCountdownActive, just omit that check.
+            if (controlsLocked)
+                return;
+
+            SpawnRandomObstacle();
+
+            // randomize next spawn interval 3-6s
+            obstacleSpawnTimer.Interval = obstacleRand.Next(3000, 6000);
+        }
+
+
+        private void SpawnRandomObstacle()
+        {
+            if (panelBackground == null) return;
+
+            string[] obstacleTypes = { "Airplane_smol", "AirBalloon_smol" };
+            string chosen = obstacleTypes[obstacleRand.Next(obstacleTypes.Length)];
+            Image sprite = (Image)Properties.Resources.ResourceManager.GetObject(chosen);
+            if (sprite == null) return;
+
+            PictureBox obstacle = new PictureBox
+            {
+                BackColor = Color.Transparent,
+                Image = sprite
+            };
+
+            if (chosen == "AirBalloon_smol")
+            {
+                obstacle.Size = new Size(50, 100);
+                obstacle.SizeMode = PictureBoxSizeMode.StretchImage;
+            }
+            else
+            {
+                obstacle.SizeMode = PictureBoxSizeMode.AutoSize;
+            }
+
+            bool fromLeft = obstacleRand.Next(2) == 0;
+            int panelH = panelBackground.Height;
+
+            // Define safe flight corridor (avoid bottom/top clutter)
+            int minY = (int)(panelH * 0.2);
+            int maxY = (int)(panelH * 0.7);
+
+            // Keep at least 150px gap from last spawn to avoid crowding
+            int startY;
+            int attempt = 0;
+            do
+            {
+                startY = obstacleRand.Next(minY, maxY);
+                attempt++;
+            } while (Math.Abs(startY - lastSpawnY) < 150 && attempt < 8);
+            lastSpawnY = startY;
+
+            int speed = obstacleRand.Next(1, 4);
+            // Default: 5° downward tilt
+            int angleDeg = obstacleRand.Next(5, 11);
+            if (!fromLeft) angleDeg = -angleDeg;
+            double angleRad = angleDeg * Math.PI / 180.0;
+            int direction = fromLeft ? 1 : -1;
+
+            // Initial position & facing
+            if (fromLeft)
+            {
+                obstacle.Left = -obstacle.Width;
+                obstacle.Top = startY;
+
+                try
+                {
+                    if (Properties.Resources.ResourceManager.GetObject(chosen) is Image img)
+                    {
+                        Image flipped = (Image)img.Clone();
+                        flipped.RotateFlip(RotateFlipType.RotateNoneFlipX);
+                        obstacle.Image = flipped;
+                    }
+                }
+                catch { }
+            }
+            else
+            {
+                obstacle.Left = panelBackground.Width + obstacle.Width;
+                obstacle.Top = startY;
+            }
+
+            obstacle.Tag = new ObstacleData(speed, angleRad, direction);
+            panelBackground.Controls.Add(obstacle);
+            obstacle.BringToFront();
+
+            // === Altitude change timer ===
+            Timer altitudeChangeTimer = new Timer { Interval = obstacleRand.Next(2000, 4000) };
+            altitudeChangeTimer.Tick += (s, e) =>
+            {
+                if (!(obstacle.Tag is ObstacleData data)) return;
+                // Adjust by ±25° to simulate drifting, keeping some downward motion
+                int newAngleDeg = 50 + obstacleRand.Next(-26, 26);
+                if (!fromLeft) newAngleDeg = -newAngleDeg;
+                data.AngleRad = newAngleDeg * Math.PI / 180.0;
+                altitudeChangeTimer.Interval = obstacleRand.Next(2000, 4000);
+            };
+            altitudeChangeTimer.Start();
+
+            // === Movement timer ===
+            Timer moveTimer = new Timer { Interval = 20 };
+            moveTimer.Tick += (s, ev) =>
+            {
+                if (controlsLocked) return;
+                if (!(obstacle.Tag is ObstacleData data)) return;
+
+                obstacle.Left += data.Direction * data.Speed;
+                obstacle.Top += (int)(Math.Sin(data.AngleRad) * (data.Speed * 0.9));
+
+                // Clamp vertical bounds
+                if (obstacle.Top < minY) obstacle.Top = minY;
+                if (obstacle.Bottom > panelH - 30) obstacle.Top = panelH - obstacle.Height - 30;
+
+                // Collision damage (once)
+                if (PlayerRocket != null && PixelPerfectCollision(obstacle, PlayerRocket))
+
+                {
+                    int damage = data.Speed * 5;
+                    try { pbHP.Value = Math.Max(0, pbHP.Value - damage); } catch { }
+
+                    panelBackground.Controls.Remove(obstacle);
+                    try { obstacle.Dispose(); } catch { }
+                    moveTimer.Stop(); moveTimer.Dispose();
+                    altitudeChangeTimer.Stop(); altitudeChangeTimer.Dispose();
+                    return;
+                }
+
+                // Remove off-screen
+                if (obstacle.Right < -150 || obstacle.Left > panelBackground.Width + 150)
+                {
+                    panelBackground.Controls.Remove(obstacle);
+                    try { obstacle.Dispose(); } catch { }
+                    moveTimer.Stop(); moveTimer.Dispose();
+                    altitudeChangeTimer.Stop(); altitudeChangeTimer.Dispose();
+                }
+            };
+            moveTimer.Start();
+        }
+
+        // Helper class for obstacle params (C# 7.3 compatible)
+        private class ObstacleData
+        {
+            public int Speed { get; set; }
+            public double AngleRad { get; set; }   // now writable so altitude timer can change it
+            public int Direction { get; set; }
+
+            public ObstacleData(int speed, double angleRad, int direction)
+            {
+                this.Speed = speed;
+                this.AngleRad = angleRad;
+                this.Direction = direction;
+            }
+        }
+
+        private bool PixelPerfectCollision(PictureBox a, PictureBox b)
+        {
+            if (a == null || b == null)
+                return false;
+
+            // Quick bounding-box reject
+            Rectangle rectA = a.Bounds;
+            Rectangle rectB = b.Bounds;
+            Rectangle intersect = Rectangle.Intersect(rectA, rectB);
+            if (intersect.IsEmpty)
+                return false;
+
+            // Helper to build a bitmap that matches how the PictureBox is drawn on screen.
+            Bitmap BuildDisplayBitmap(PictureBox pb)
+            {
+                Image img = pb.Image;
+
+                // If PictureBox has no Image and it's the PlayerRocket, use the currently animated sprite.
+                if (img == null && pb == PlayerRocket && currentRocketSprite != null)
+                    img = currentRocketSprite;
+
+                if (img == null)
+                    return null;
+
+                // Create bitmap that matches the drawn size of the picturebox
+                try
+                {
+                    Bitmap bmp = new Bitmap(img, pb.Size);
+                    return bmp;
+                }
+                catch
+                {
+                    // fallback: try original image sized
+                    try { return new Bitmap(img); } catch { return null; }
+                }
+            }
+
+            using (Bitmap bmpA = BuildDisplayBitmap(a))
+            using (Bitmap bmpB = BuildDisplayBitmap(b))
+            {
+                if (bmpA == null || bmpB == null)
+                    return false;
+
+                // Intersection coordinates are in parent/control coordinates.
+                // We'll sample pixels inside the intersection and map them to the local bitmap coordinates.
+                // Use a small step to improve performance; set to 1 for perfect accuracy if you need.
+                int step = 2;
+                const int alphaThreshold = 40; // pixels with alpha <= threshold are considered transparent
+
+                for (int x = intersect.Left; x < intersect.Right; x += step)
+                {
+                    for (int y = intersect.Top; y < intersect.Bottom; y += step)
+                    {
+                        int ax = x - rectA.Left;
+                        int ay = y - rectA.Top;
+                        int bx = x - rectB.Left;
+                        int by = y - rectB.Top;
+
+                        // Bounds sanity checks
+                        if (ax < 0 || ay < 0 || bx < 0 || by < 0 ||
+                            ax >= bmpA.Width || ay >= bmpA.Height ||
+                            bx >= bmpB.Width || by >= bmpB.Height)
+                            continue;
+
+                        Color ca = bmpA.GetPixel(ax, ay);
+                        Color cb = bmpB.GetPixel(bx, by);
+
+                        if (ca.A > alphaThreshold && cb.A > alphaThreshold)
+                            return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
     }
