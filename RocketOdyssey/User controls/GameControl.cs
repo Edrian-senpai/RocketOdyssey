@@ -21,7 +21,7 @@ namespace RocketOdyssey
         // Background scrolling
         private Timer scrollTimer;
         private Image backgroundImage;
-        private int scrollSpeed = 1; // Background scroll speed
+        private int scrollSpeed = 2; // Background scroll speed
 
         // Player movement state
         private bool controlsLocked = true;
@@ -282,19 +282,17 @@ namespace RocketOdyssey
 
             fuelTimer = new Timer { Interval = fuelDrainInterval };
             fuelTimer.Tick += FuelTimer_Tick;
-            fuelTimer.Start();
 
-            // === Tier 1 Obstacle Spawner (spawn 4..8 obstacles each event) ===
+            // --- Tier 1 Obstacle Spawner (spawn 3..6 obstacles each event) ---
             obstacleSpawnTimer = new Timer();
             obstacleSpawnTimer.Interval = obstacleRand.Next(3000, 6001); // random 3–6s
             obstacleSpawnTimer.Tick += (s, e) =>
             {
-                // spawn a small group of obstacles at once (2..5)
+                // spawn a small group of obstacles at once (3..6)
                 int batchCount = obstacleRand.Next(3, 6); // 3..6 inclusive
                 for (int i = 0; i < batchCount; i++)
                 {
                     // small delay between creation attempts helps spread them vertically,
-                    // but we're synchronous here; SpawnRandomObstacle's internal
                     // spacing attempt prevents close stacking.
                     SpawnRandomObstacle();
                 }
@@ -302,9 +300,6 @@ namespace RocketOdyssey
                 // Re-randomize the next spawn delay
                 obstacleSpawnTimer.Interval = obstacleRand.Next(4000, 8001);
             };
-            obstacleSpawnTimer.Start();
-
-
 
             // --- Launch countdown logic with re-entry pause system ---
 
@@ -344,6 +339,7 @@ namespace RocketOdyssey
                             PlayerRocket.Invalidate();
 
                             SetGamePaused(false);
+                            
                         }
                     };
                     reentryTimer.Start();
@@ -354,7 +350,7 @@ namespace RocketOdyssey
             else
             {
                 if (launchCountdown == 0)
-                    launchCountdown = 10;
+                    launchCountdown = 11;
 
                 controlsLocked = true;
 
@@ -401,6 +397,7 @@ namespace RocketOdyssey
                         launchDelayTimer.Stop();
                         controlsLocked = false;
                         SessionManager.IsLaunchCountdownActive = false;
+                        SetGamePaused(false);
                     }
                 };
                 launchDelayTimer.Start();
@@ -812,10 +809,11 @@ namespace RocketOdyssey
                     countdownTimer.Stop();
                     scrollTimer.Stop();
 
-                    // 🔹 Stop all sounds before going back
+                    laserBeam.Visible = false;
+                    // Stop all sounds before going back
                     StopAllSounds();
 
-                    // 🔹 Reset background music timeline
+                    // Reset background music timeline
                     bgMusicTime = 0;
                     DatabaseHelper.SaveSoundState(
                         currentUser,
@@ -848,7 +846,7 @@ namespace RocketOdyssey
                     DatabaseHelper.SaveLaunchTimer(currentUser, launchCountdown);
                     DatabaseHelper.UpdateUpgrade(currentUser, "Score", score);
 
-                    // 🔹 Return to main menu (fresh state, fresh music)
+                    // Return to main menu (fresh state, fresh music)
                     MainMenuControl menu = new MainMenuControl();
                     GameForm parentForm = (GameForm)this.FindForm();
                     parentForm.Controls.Clear();
@@ -1137,7 +1135,7 @@ namespace RocketOdyssey
                 bgOutput?.Pause();
                 laserOutput?.Pause();
 
-                // --- 🔹 Immediately save sound state when pausing ---
+                // --- Immediately save sound state when pausing ---
                 try
                 {
                     double bgMusicTime = bgReader?.CurrentTime.TotalSeconds ?? 0;
@@ -1151,6 +1149,7 @@ namespace RocketOdyssey
                 catch (Exception ex)
                 {
                     Console.WriteLine("Failed to save sound state on pause: " + ex.Message);
+                    Application.Exit();
                 }
             }
             else
@@ -1183,7 +1182,10 @@ namespace RocketOdyssey
                 if (laserActive)
                     laserOutput?.Play();
 
-                // --- 🔹 Restore laserTimeLeft from DB if available ---
+                // --- Resume spawning ---
+                obstacleSpawnTimer.Start();
+
+                // --- Restore laserTimeLeft from DB if available ---
                 try
                 {
                     var soundState = DatabaseHelper.LoadSoundState(currentUser);
@@ -1199,6 +1201,7 @@ namespace RocketOdyssey
                 catch (Exception ex)
                 {
                     Console.WriteLine("Failed to load sound state on resume: " + ex.Message);
+                    Application.Exit();
                 }
             }
         }
@@ -1645,9 +1648,18 @@ namespace RocketOdyssey
         }
 
 
+        // Global tracking list (place near your other fields)
+        private List<PictureBox> activeObstacles = new List<PictureBox>();
+
+        // ===================== OBSTACLE SPAWN =====================
         private void SpawnRandomObstacle()
         {
             if (panelBackground == null) return;
+
+            // Limit maximum visible obstacles
+            activeObstacles.RemoveAll(o => o == null || o.IsDisposed);
+            if (activeObstacles.Count >= 15)
+                return;
 
             string[] obstacleTypes = { "Airplane_smol", "AirBalloon_smol" };
             string chosen = obstacleTypes[obstacleRand.Next(obstacleTypes.Length)];
@@ -1662,22 +1674,20 @@ namespace RocketOdyssey
 
             if (chosen == "AirBalloon_smol")
             {
-                obstacle.Size = new Size(50, 100);
+                obstacle.Size = new Size(50, 200);
                 obstacle.SizeMode = PictureBoxSizeMode.StretchImage;
             }
             else
             {
+                obstacle.Size = new Size(150, 50);
                 obstacle.SizeMode = PictureBoxSizeMode.AutoSize;
             }
 
             bool fromLeft = obstacleRand.Next(2) == 0;
             int panelH = panelBackground.Height;
-
-            // Define safe flight corridor (avoid bottom/top clutter)
             int minY = (int)(panelH * 0.2);
             int maxY = (int)(panelH * 0.7);
 
-            // Keep at least 150px gap from last spawn to avoid crowding
             int startY;
             int attempt = 0;
             do
@@ -1688,18 +1698,15 @@ namespace RocketOdyssey
             lastSpawnY = startY;
 
             int speed = obstacleRand.Next(1, 4);
-            // Default: 5° downward tilt
             int angleDeg = obstacleRand.Next(5, 11);
             if (!fromLeft) angleDeg = -angleDeg;
             double angleRad = angleDeg * Math.PI / 180.0;
             int direction = fromLeft ? 1 : -1;
 
-            // Initial position & facing
             if (fromLeft)
             {
                 obstacle.Left = -obstacle.Width;
                 obstacle.Top = startY;
-
                 try
                 {
                     if (Properties.Resources.ResourceManager.GetObject(chosen) is Image img)
@@ -1717,16 +1724,20 @@ namespace RocketOdyssey
                 obstacle.Top = startY;
             }
 
-            obstacle.Tag = new ObstacleData(speed, angleRad, direction);
+            obstacle.Tag = new ObstacleData(speed, angleRad, direction)
+            {
+                LaserHitTime = 0
+            };
+
             panelBackground.Controls.Add(obstacle);
             obstacle.BringToFront();
+            activeObstacles.Add(obstacle);
 
             // === Altitude change timer ===
             Timer altitudeChangeTimer = new Timer { Interval = obstacleRand.Next(2000, 4000) };
             altitudeChangeTimer.Tick += (s, e) =>
             {
                 if (!(obstacle.Tag is ObstacleData data)) return;
-                // Adjust by ±25° to simulate drifting, keeping some downward motion
                 int newAngleDeg = 50 + obstacleRand.Next(-26, 26);
                 if (!fromLeft) newAngleDeg = -newAngleDeg;
                 data.AngleRad = newAngleDeg * Math.PI / 180.0;
@@ -1734,7 +1745,7 @@ namespace RocketOdyssey
             };
             altitudeChangeTimer.Start();
 
-            // === Movement timer ===
+            // === Movement & laser interaction timer ===
             Timer moveTimer = new Timer { Interval = 20 };
             moveTimer.Tick += (s, ev) =>
             {
@@ -1744,50 +1755,100 @@ namespace RocketOdyssey
                 obstacle.Left += data.Direction * data.Speed;
                 obstacle.Top += (int)(Math.Sin(data.AngleRad) * (data.Speed * 0.9));
 
-                // Clamp vertical bounds
+                // Clamp vertical movement
                 if (obstacle.Top < minY) obstacle.Top = minY;
                 if (obstacle.Bottom > panelH - 30) obstacle.Top = panelH - obstacle.Height - 30;
 
-                // Collision damage (once)
+                // === Collision with rocket ===
                 if (PlayerRocket != null && PixelPerfectCollision(obstacle, PlayerRocket))
-
                 {
                     int damage = data.Speed * 5;
                     try { pbHP.Value = Math.Max(0, pbHP.Value - damage); } catch { }
 
-                    panelBackground.Controls.Remove(obstacle);
-                    try { obstacle.Dispose(); } catch { }
-                    moveTimer.Stop(); moveTimer.Dispose();
-                    altitudeChangeTimer.Stop(); altitudeChangeTimer.Dispose();
+                    RemoveObstacle(obstacle, moveTimer, altitudeChangeTimer);
                     return;
                 }
 
-                // Remove off-screen
+                // === Laser collision check (uses actual laser beam) ===
+                if (laserBeam != null && laserBeam.Visible && laserActive)
+                {
+                    if (LaserCollision(obstacle))
+                    {
+                        data.LaserHitTime += 60; // +60 ms per tick
+
+                        // Optional: flicker to show hit effect
+                        if (data.LaserHitTime % 200 < 100)
+                            obstacle.BackColor = Color.FromArgb(80, Color.Red);
+                        else
+                            obstacle.BackColor = Color.Transparent;
+
+                        if (data.LaserHitTime >= 1000)
+                        {
+                            // Destroy after 1s continuous contact
+                            RemoveObstacle(obstacle, moveTimer, altitudeChangeTimer);
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        data.LaserHitTime = 0;
+                        obstacle.BackColor = Color.Transparent;
+                    }
+                }
+
+
+                // === Remove when off-screen ===
                 if (obstacle.Right < -150 || obstacle.Left > panelBackground.Width + 150)
                 {
-                    panelBackground.Controls.Remove(obstacle);
-                    try { obstacle.Dispose(); } catch { }
-                    moveTimer.Stop(); moveTimer.Dispose();
-                    altitudeChangeTimer.Stop(); altitudeChangeTimer.Dispose();
+                    RemoveObstacle(obstacle, moveTimer, altitudeChangeTimer);
                 }
             };
             moveTimer.Start();
         }
 
-        // Helper class for obstacle params (C# 7.3 compatible)
+        // ===================== HELPER METHODS =====================
+        private void RemoveObstacle(PictureBox obstacle, Timer moveTimer, Timer altitudeTimer)
+        {
+            if (panelBackground.Controls.Contains(obstacle))
+            {
+                // (optional) Explosion animation here in the future
+                panelBackground.Controls.Remove(obstacle);
+            }
+            activeObstacles.Remove(obstacle);
+            try { obstacle.Dispose(); } catch { }
+            moveTimer.Stop(); moveTimer.Dispose();
+            altitudeTimer.Stop(); altitudeTimer.Dispose();
+        }
+
+
+        private bool LaserCollision(PictureBox obstacle)
+        {
+            // Ensure laser is active and visible
+            if (laserBeam == null || !laserBeam.Visible || !laserActive)
+                return false;
+
+            // Simple bounding-box check for now (fast)
+            return obstacle.Bounds.IntersectsWith(laserBeam.Bounds);
+        }
+
+
+        // ===================== UPDATED OBSTACLE DATA =====================
         private class ObstacleData
         {
             public int Speed { get; set; }
-            public double AngleRad { get; set; }   // now writable so altitude timer can change it
+            public double AngleRad { get; set; }
             public int Direction { get; set; }
+            public double LaserHitTime { get; set; } // seconds of laser contact
 
             public ObstacleData(int speed, double angleRad, int direction)
             {
-                this.Speed = speed;
-                this.AngleRad = angleRad;
-                this.Direction = direction;
+                Speed = speed;
+                AngleRad = angleRad;
+                Direction = direction;
+                LaserHitTime = 0;
             }
         }
+
 
         private bool PixelPerfectCollision(PictureBox a, PictureBox b)
         {
