@@ -277,6 +277,7 @@
     <Content Include="Images&amp;Animations\Icons&amp;Logos\Armor_Logo.png" />
     <Content Include="Images&amp;Animations\Icons&amp;Logos\Back_icon.png" />
     <Content Include="Images&amp;Animations\Icons&amp;Logos\coin_Icon.gif" />
+    <Content Include="Images&amp;Animations\Icons&amp;Logos\coin_Logo.png" />
     <Content Include="Images&amp;Animations\Icons&amp;Logos\Pause_icon.png" />
     <Content Include="Images&amp;Animations\Icons&amp;Logos\Rocket_Armor_Logo.png" />
     <Content Include="Images&amp;Animations\Icons&amp;Logos\Rocket_Speed_Logo.png" />

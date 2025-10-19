@@ -123,6 +123,16 @@ namespace RocketOdyssey.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap coin_Logo {
+            get {
+                object obj = ResourceManager.GetObject("coin_Logo", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap Game_Logo {
             get {
                 object obj = ResourceManager.GetObject("Game_Logo", resourceCulture);

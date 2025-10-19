@@ -68,7 +68,7 @@ namespace RocketOdyssey
 
         private Timer fuelTimer;
         private int fuelDrainRate = 1;
-        private int fuelDrainInterval = 1000;
+        private int fuelDrainInterval = 400;
 
         private Timer moveTimer;
         private bool isOutOfFuel = false;
@@ -330,6 +330,9 @@ namespace RocketOdyssey
                         {
                             lblLaunchCountdown.Text = reentryCountdown.ToString();
                             lblLaunchCountdown.Left = (panelBackground.Width - lblLaunchCountdown.Width) / 2;
+                            // Disable rocket tilt/rotation during countdown
+                            currentRotation = 0f;
+                            PlayerRocket.Invalidate();
                         }
                         else
                         {
@@ -339,7 +342,7 @@ namespace RocketOdyssey
                             PlayerRocket.Invalidate();
 
                             SetGamePaused(false);
-                            
+
                         }
                     };
                     reentryTimer.Start();
@@ -507,7 +510,7 @@ namespace RocketOdyssey
                 return;
 
             currentStageOffset += scrollSpeed;
-           if (!bgMusicPlaying)
+            if (!bgMusicPlaying)
                 StartBackgroundMusic();
 
             var (currentImg, _) = backgroundStages[currentStageIndex];
@@ -808,8 +811,9 @@ namespace RocketOdyssey
                 {
                     countdownTimer.Stop();
                     scrollTimer.Stop();
+                    obstacleSpawnTimer.Stop(); // stop obstacle spawning
 
-                    laserBeam.Visible = false;
+
                     // Stop all sounds before going back
                     StopAllSounds();
 
@@ -982,6 +986,10 @@ namespace RocketOdyssey
         {
             if (isPaused) return;
 
+            // Prevent pausing during the launch countdown
+            if (launchCountdown > 0 && SessionManager.IsLaunchCountdownActive)
+                return;
+
             // Stop game timers
             SetGamePaused(true);
 
@@ -1033,6 +1041,9 @@ namespace RocketOdyssey
             {
                 launchDelayTimer?.Start();
                 controlsLocked = true;
+                // Disable rocket tilt/rotation during countdown
+                currentRotation = 0f;
+                PlayerRocket.Invalidate();
             }
             else
             {
@@ -1280,7 +1291,7 @@ namespace RocketOdyssey
                     Visible = false
                 };
                 panelBackground.Controls.Add(laserBeam);
-                laserBeam.BringToFront();
+                laserBeam.SendToBack();
 
                 ImageAnimator.Animate(laserBeam.Image, OnFrameChanged);
             }
@@ -1674,15 +1685,16 @@ namespace RocketOdyssey
 
             if (chosen == "AirBalloon_smol")
             {
-                obstacle.Size = new Size(50, 200);
+                obstacle.Size = new Size(100, 200);
                 obstacle.SizeMode = PictureBoxSizeMode.StretchImage;
             }
             else
             {
-                obstacle.Size = new Size(150, 50);
-                obstacle.SizeMode = PictureBoxSizeMode.AutoSize;
+                obstacle.Size = new Size(200, 100);
+                obstacle.SizeMode = PictureBoxSizeMode.StretchImage;
             }
 
+            // Randomly pick side
             bool fromLeft = obstacleRand.Next(2) == 0;
             int panelH = panelBackground.Height;
             int minY = (int)(panelH * 0.2);
@@ -1697,33 +1709,52 @@ namespace RocketOdyssey
             } while (Math.Abs(startY - lastSpawnY) < 150 && attempt < 8);
             lastSpawnY = startY;
 
+            // --- Direction setup ---
+            int direction = fromLeft ? 1 : -1; // right = +1, left = -1
             int speed = obstacleRand.Next(1, 4);
-            int angleDeg = obstacleRand.Next(5, 11);
-            if (!fromLeft) angleDeg = -angleDeg;
+            int angleDeg = obstacleRand.Next(5, 11); // always 5–10° downward
             double angleRad = angleDeg * Math.PI / 180.0;
-            int direction = fromLeft ? 1 : -1;
 
+            // --- Position and facing ---
             if (fromLeft)
             {
                 obstacle.Left = -obstacle.Width;
                 obstacle.Top = startY;
-                try
+
+                // Flip airplane (faces left by default)
+                if (chosen == "Airplane_smol")
                 {
-                    if (Properties.Resources.ResourceManager.GetObject(chosen) is Image img)
+                    try
                     {
-                        Image flipped = (Image)img.Clone();
-                        flipped.RotateFlip(RotateFlipType.RotateNoneFlipX);
-                        obstacle.Image = flipped;
+                        if (Properties.Resources.ResourceManager.GetObject(chosen) is Image img)
+                        {
+                            Image flipped = (Image)img.Clone();
+                            flipped.RotateFlip(RotateFlipType.RotateNoneFlipX);
+                            obstacle.Image = flipped;
+                        }
                     }
+                    catch { }
                 }
-                catch { }
             }
             else
             {
-                obstacle.Left = panelBackground.Width + obstacle.Width;
+                obstacle.Left = panelBackground.Width;
                 obstacle.Top = startY;
+                direction = -1; // move left across screen
+
+                // Airplane faces left by default — no flip needed
+                if (chosen == "Airplane_smol")
+                {
+                    try
+                    {
+                        if (Properties.Resources.ResourceManager.GetObject(chosen) is Image img)
+                            obstacle.Image = (Image)img.Clone();
+                    }
+                    catch { }
+                }
             }
 
+            // store movement data
             obstacle.Tag = new ObstacleData(speed, angleRad, direction)
             {
                 LaserHitTime = 0
@@ -1732,6 +1763,7 @@ namespace RocketOdyssey
             panelBackground.Controls.Add(obstacle);
             obstacle.BringToFront();
             activeObstacles.Add(obstacle);
+
 
             // === Altitude change timer ===
             Timer altitudeChangeTimer = new Timer { Interval = obstacleRand.Next(2000, 4000) };

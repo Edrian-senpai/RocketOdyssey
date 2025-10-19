@@ -146,7 +146,7 @@
             // pbCoin_Logo
             // 
             this.pbCoin_Logo.BackColor = System.Drawing.Color.Transparent;
-            this.pbCoin_Logo.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("pbCoin_Logo.BackgroundImage")));
+            this.pbCoin_Logo.BackgroundImage = global::RocketOdyssey.Properties.Resources.coin_Logo;
             this.pbCoin_Logo.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.pbCoin_Logo.Location = new System.Drawing.Point(542, 0);
             this.pbCoin_Logo.Name = "pbCoin_Logo";
