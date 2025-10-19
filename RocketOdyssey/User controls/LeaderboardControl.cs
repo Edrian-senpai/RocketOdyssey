@@ -21,10 +21,12 @@ namespace RocketOdyssey.User_controls
             using (var conn = RocketOdyssey.Database.DatabaseHelper.GetConnection())
             {
                 conn.Open();
+
+                // Use HighScore column instead of Score
                 string query = @"
-                    SELECT Username, Score
+                    SELECT Username, HighScore
                     FROM Users
-                    ORDER BY Score DESC
+                    ORDER BY HighScore DESC
                     LIMIT 10;";
 
                 using (var cmd = new SQLiteCommand(query, conn))
@@ -36,9 +38,9 @@ namespace RocketOdyssey.User_controls
                 }
             }
 
-            // Optional styling
+            // Updated header to match correct column
             tblLeaderboards.Columns["Username"].HeaderText = "Player";
-            tblLeaderboards.Columns["Score"].HeaderText = "Score";
+            tblLeaderboards.Columns["HighScore"].HeaderText = "High Score";
 
             tblLeaderboards.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             tblLeaderboards.RowHeadersVisible = false;

@@ -13,6 +13,9 @@ namespace RocketOdyssey
 {
     public partial class GameControl : UserControl
     {
+        // Game state
+        private bool isGameOver = false;
+
         // Launch countdown display
         private Label lblLaunchCountdown;
         private Timer visibleCountdownTimer;
@@ -801,6 +804,10 @@ namespace RocketOdyssey
 
         private void StartGameOverCountdown()
         {
+            // Prevent multiple triggers
+            if (isGameOver) return;
+            isGameOver = true;
+
             int countdown = 5;
             Timer countdownTimer = new Timer();
             countdownTimer.Interval = 1000;
@@ -1841,12 +1848,27 @@ namespace RocketOdyssey
         // ===================== HELPER METHODS =====================
         private void RemoveObstacle(PictureBox obstacle, Timer moveTimer, Timer altitudeTimer)
         {
-            if (panelBackground.Controls.Contains(obstacle))
+            // Skip scoring if the game is already over or paused/locked
+            if (!controlsLocked && !isPaused && pbHP.Value > 0 && !isGameOver)
             {
-                // (optional) Explosion animation here in the future
-                panelBackground.Controls.Remove(obstacle);
+                if (obstacle?.Tag is ObstacleData data)
+                {
+                    int scoreGain = data.Speed * 5; // 1→5, 2→10, 3→15
+                    score += scoreGain;
+
+                    if (lblScore != null)
+                        lblScore.Content = $"Score: {score}";
+
+                    SavePlayerProgress();
+                }
             }
+
+            // --- Remove obstacle safely ---
+            if (panelBackground.Controls.Contains(obstacle))
+                panelBackground.Controls.Remove(obstacle);
+
             activeObstacles.Remove(obstacle);
+
             try { obstacle.Dispose(); } catch { }
             moveTimer.Stop(); moveTimer.Dispose();
             altitudeTimer.Stop(); altitudeTimer.Dispose();
