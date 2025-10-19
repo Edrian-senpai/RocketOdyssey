@@ -1692,12 +1692,12 @@ namespace RocketOdyssey
 
             if (chosen == "AirBalloon_smol")
             {
-                obstacle.Size = new Size(100, 200);
+                obstacle.Size = new Size(50, 150);
                 obstacle.SizeMode = PictureBoxSizeMode.StretchImage;
             }
             else
             {
-                obstacle.Size = new Size(200, 100);
+                obstacle.Size = new Size(150, 50);
                 obstacle.SizeMode = PictureBoxSizeMode.StretchImage;
             }
 
@@ -1768,7 +1768,7 @@ namespace RocketOdyssey
             };
 
             panelBackground.Controls.Add(obstacle);
-            obstacle.BringToFront();
+            obstacle.SendToBack();
             activeObstacles.Add(obstacle);
 
 

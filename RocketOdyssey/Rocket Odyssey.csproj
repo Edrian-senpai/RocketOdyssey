@@ -287,6 +287,7 @@
     <Content Include="Images&amp;Animations\Icons&amp;Logos\Weapon_Logo.png" />
     <Content Include="Images&amp;Animations\obstacles\AirBalloon_smol.png" />
     <Content Include="Images&amp;Animations\obstacles\Airplane_smol.png" />
+    <Content Include="Images&amp;Animations\rocket_2 animation\laser-beam-fit.gif" />
     <Content Include="Images&amp;Animations\rocket_2 animation\rocket_2_land_smol.png" />
     <Content Include="Images&amp;Animations\rocket_2 animation\rocket_2_smol.gif" />
     <Content Include="Images&amp;Animations\rocket_2 animation\rocket_2_smol_down.gif" />
