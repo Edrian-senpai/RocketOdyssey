@@ -24,7 +24,7 @@ namespace RocketOdyssey
         // Background scrolling
         private Timer scrollTimer;
         private Image backgroundImage;
-        private int scrollSpeed = 2; // Background scroll speed
+        private int scrollSpeed = 1; // Background scroll speed
 
         // Player movement state
         private bool controlsLocked = true;
