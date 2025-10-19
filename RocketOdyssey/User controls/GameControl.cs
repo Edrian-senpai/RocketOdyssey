@@ -1823,8 +1823,8 @@ namespace RocketOdyssey
 
                         if (data.LaserHitTime >= 1000)
                         {
-                            // Destroy after 1s continuous contact
-                            RemoveObstacle(obstacle, moveTimer, altitudeChangeTimer);
+                            // 🔹 Destroy after 1s continuous contact — give double score
+                            RemoveObstacle(obstacle, moveTimer, altitudeChangeTimer, destroyedByLaser: true);
                             return;
                         }
                     }
@@ -1834,7 +1834,6 @@ namespace RocketOdyssey
                         obstacle.BackColor = Color.Transparent;
                     }
                 }
-
 
                 // === Remove when off-screen ===
                 if (obstacle.Right < -150 || obstacle.Left > panelBackground.Width + 150)
@@ -1846,34 +1845,43 @@ namespace RocketOdyssey
         }
 
         // ===================== HELPER METHODS =====================
-        private void RemoveObstacle(PictureBox obstacle, Timer moveTimer, Timer altitudeTimer)
+        private void RemoveObstacle(PictureBox obstacle, Timer moveTimer, Timer altitudeTimer, bool destroyedByLaser = false)
         {
             // Skip scoring if the game is already over or paused/locked
             if (!controlsLocked && !isPaused && pbHP.Value > 0 && !isGameOver)
             {
                 if (obstacle?.Tag is ObstacleData data)
                 {
-                    int scoreGain = data.Speed * 5; // 1→5, 2→10, 3→15
+                    // --- Base score based on obstacle speed ---
+                    int scoreGain = data.Speed * 5; // 1→5, 2→10, 3→15, 4→20
+
+                    // --- Double score if destroyed by laser ---
+                    if (destroyedByLaser)
+                        scoreGain *= 2;
+
                     score += scoreGain;
 
+                    // Update on-screen score label if it exists
                     if (lblScore != null)
                         lblScore.Content = $"Score: {score}";
 
+                    // Immediately save updated progress (persistent scoring)
                     SavePlayerProgress();
                 }
             }
 
-            // --- Remove obstacle safely ---
+            // --- Remove the obstacle safely ---
             if (panelBackground.Controls.Contains(obstacle))
                 panelBackground.Controls.Remove(obstacle);
 
             activeObstacles.Remove(obstacle);
 
+            // --- Clean up resources ---
             try { obstacle.Dispose(); } catch { }
+
             moveTimer.Stop(); moveTimer.Dispose();
             altitudeTimer.Stop(); altitudeTimer.Dispose();
         }
-
 
         private bool LaserCollision(PictureBox obstacle)
         {
