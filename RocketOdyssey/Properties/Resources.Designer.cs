@@ -93,6 +93,16 @@ namespace RocketOdyssey.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap Asteroid_smol {
+            get {
+                object obj = ResourceManager.GetObject("Asteroid_smol", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap Atmosphere {
             get {
                 object obj = ResourceManager.GetObject("Atmosphere", resourceCulture);
@@ -123,9 +133,39 @@ namespace RocketOdyssey.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap Boss_ship_smol {
+            get {
+                object obj = ResourceManager.GetObject("Boss_ship_smol", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap coin {
+            get {
+                object obj = ResourceManager.GetObject("coin", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap coin_Logo {
             get {
                 object obj = ResourceManager.GetObject("coin_Logo", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Fuel {
+            get {
+                object obj = ResourceManager.GetObject("Fuel", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -156,6 +196,16 @@ namespace RocketOdyssey.Properties {
         internal static System.Drawing.Bitmap HomeBase {
             get {
                 object obj = ResourceManager.GetObject("HomeBase", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap laser_battery {
+            get {
+                object obj = ResourceManager.GetObject("laser_battery", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -196,6 +246,16 @@ namespace RocketOdyssey.Properties {
         internal static System.Drawing.Bitmap MoonOrbit {
             get {
                 object obj = ResourceManager.GetObject("MoonOrbit", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap orb {
+            get {
+                object obj = ResourceManager.GetObject("orb", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -263,6 +323,16 @@ namespace RocketOdyssey.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap repair_tool {
+            get {
+                object obj = ResourceManager.GetObject("repair_tool", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap rocket_2_land_smol {
             get {
                 object obj = ResourceManager.GetObject("rocket_2_land_smol", resourceCulture);
@@ -296,6 +366,16 @@ namespace RocketOdyssey.Properties {
         internal static System.Drawing.Bitmap rocket_2_smol_up {
             get {
                 object obj = ResourceManager.GetObject("rocket_2_smol_up", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Sattelite_smol {
+            get {
+                object obj = ResourceManager.GetObject("Sattelite_smol", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

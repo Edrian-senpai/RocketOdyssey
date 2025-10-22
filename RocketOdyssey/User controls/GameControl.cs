@@ -464,7 +464,6 @@ namespace RocketOdyssey
 
             pbHP.MaxValue = newMaxHP;
             pbHP.Value = Math.Min(hp, pbHP.MaxValue);
-            lblHP1.Content = $"HP: {pbHP.Value}/{pbHP.MaxValue}";
             UpdateHPBarColor();
 
             // Save to DB for persistence

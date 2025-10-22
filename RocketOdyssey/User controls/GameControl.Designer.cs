@@ -40,7 +40,6 @@
             this.pbFuel_Logo = new System.Windows.Forms.PictureBox();
             this.pbFuel = new CuoreUI.Controls.cuiProgressBarHorizontal();
             this.PlayerRocket = new System.Windows.Forms.PictureBox();
-            this.lblHP1 = new CuoreUI.Controls.cuiLabel();
             this.pbHP = new CuoreUI.Controls.cuiProgressBarHorizontal();
             this.panelBackground.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbWeapon_Logo)).BeginInit();
@@ -65,7 +64,6 @@
             this.panelBackground.Controls.Add(this.pbFuel_Logo);
             this.panelBackground.Controls.Add(this.pbFuel);
             this.panelBackground.Controls.Add(this.PlayerRocket);
-            this.panelBackground.Controls.Add(this.lblHP1);
             this.panelBackground.Controls.Add(this.pbHP);
             this.panelBackground.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelBackground.Location = new System.Drawing.Point(0, 0);
@@ -187,7 +185,7 @@
             // pbHP_Logo
             // 
             this.pbHP_Logo.BackColor = System.Drawing.Color.Transparent;
-            this.pbHP_Logo.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("pbHP_Logo.BackgroundImage")));
+            this.pbHP_Logo.BackgroundImage = global::RocketOdyssey.Properties.Resources.repair_tool;
             this.pbHP_Logo.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.pbHP_Logo.Location = new System.Drawing.Point(0, 48);
             this.pbHP_Logo.Name = "pbHP_Logo";
@@ -245,22 +243,6 @@
             this.PlayerRocket.WaitOnLoad = true;
             this.PlayerRocket.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.GameControl_PreviewKeyDown);
             // 
-            // lblHP1
-            // 
-            this.lblHP1.BackColor = System.Drawing.Color.Transparent;
-            this.lblHP1.Content = "---";
-            this.lblHP1.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblHP1.ForeColor = System.Drawing.Color.White;
-            this.lblHP1.HorizontalAlignment = System.Drawing.StringAlignment.Center;
-            this.lblHP1.Location = new System.Drawing.Point(4, 147);
-            this.lblHP1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.lblHP1.Name = "lblHP1";
-            this.lblHP1.Size = new System.Drawing.Size(183, 30);
-            this.lblHP1.TabIndex = 29;
-            this.lblHP1.TabStop = false;
-            this.lblHP1.VerticalAlignment = System.Drawing.StringAlignment.Near;
-            this.lblHP1.Visible = false;
-            // 
             // pbHP
             // 
             this.pbHP.Background = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
@@ -310,6 +292,5 @@
         private CuoreUI.Controls.cuiButton btnPause;
         private System.Windows.Forms.PictureBox pbWeapon_Logo;
         private CuoreUI.Controls.cuiProgressBarHorizontal pbWeapon;
-        private CuoreUI.Controls.cuiLabel lblHP1;
     }
 }
