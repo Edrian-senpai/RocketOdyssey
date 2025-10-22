@@ -248,7 +248,18 @@ namespace RocketOdyssey.Database
                 conn.Open();
                 using (var transaction = conn.BeginTransaction())
                 {
-                    // --- Reset player position, stats, and launch timer ---
+                    // --- Get the player's RocketArmor upgrade ---
+                    int armorValue = 100;
+                    string getArmorQuery = "SELECT RocketArmor FROM Users WHERE Username = @username;";
+                    using (var cmd = new SQLiteCommand(getArmorQuery, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@username", username);
+                        object result = cmd.ExecuteScalar();
+                        if (result != null && int.TryParse(result.ToString(), out int armor))
+                            armorValue = armor; // use the armor as max HP
+                    }
+
+                    // --- Reset player position, fuel, HP (based on armor), and launch timer ---
                     string resetUserQuery = @"
                 UPDATE Users SET 
                     RocketPosX = 326, 
@@ -256,12 +267,13 @@ namespace RocketOdyssey.Database
                     BackgroundStage = 0,
                     StageOffset = 0,
                     FuelRemaining = 100,
-                    CurrentHP = 100,
+                    CurrentHP = @armorValue,
                     LaunchTimerRemaining = 10
                 WHERE Username = @username;";
                     using (var cmd = new SQLiteCommand(resetUserQuery, conn))
                     {
                         cmd.Parameters.AddWithValue("@username", username);
+                        cmd.Parameters.AddWithValue("@armorValue", armorValue);
                         cmd.ExecuteNonQuery();
                     }
 

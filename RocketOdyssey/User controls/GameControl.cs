@@ -24,7 +24,7 @@ namespace RocketOdyssey
         // Background scrolling
         private Timer scrollTimer;
         private Image backgroundImage;
-        private int scrollSpeed = 2; // Background scroll speed
+        private int scrollSpeed = 1; // Background scroll speed
 
         // Player movement state
         private bool controlsLocked = true;
@@ -43,7 +43,7 @@ namespace RocketOdyssey
         private Image landGif;
 
         // Movement settings
-        private int moveStep = 1;
+        private int moveStep = 2;
         private readonly int minX = 0;
         private readonly int minY = 140;
         private readonly int maxX = 650;
@@ -71,7 +71,7 @@ namespace RocketOdyssey
 
         private Timer fuelTimer;
         private int fuelDrainRate = 1;
-        private int fuelDrainInterval = 400;
+        private int fuelDrainInterval = 500;
 
         private Timer moveTimer;
         private bool isOutOfFuel = false;
@@ -99,6 +99,11 @@ namespace RocketOdyssey
         private DateTime lastSpawnTime = DateTime.MinValue;
         private int lastSpawnY = -1;
 
+        // === Power-up System ===
+        private Timer powerupSpawnTimer;
+        private Random powerupRand = new Random();
+        private List<PictureBox> activePowerups = new List<PictureBox>();
+
         private bool focusRecoveryEnabled = true;
 
         public GameControl()
@@ -120,6 +125,7 @@ namespace RocketOdyssey
                 AutoSize = true,
                 Visible = false
             };
+           
             panelBackground.Controls.Add(lblLaunchCountdown);
             lblLaunchCountdown.BringToFront();
             lblLaunchCountdown.Location = new Point(
@@ -151,6 +157,9 @@ namespace RocketOdyssey
                 rocketWeapon = dbWeapon;
             }
 
+
+
+
             // ---- Hide weapon bar and logo if no weapon upgrade ----
             if (rocketWeapon <= 0)
             {
@@ -167,6 +176,11 @@ namespace RocketOdyssey
             coins = DatabaseHelper.GetPlayerCoins(currentUser);
             hp = DatabaseHelper.LoadPlayerHP(currentUser);
             fuel = DatabaseHelper.LoadPlayerFuel(currentUser);
+
+            //hp = Math.Min(DatabaseHelper.LoadPlayerHP(currentUser), maxHP);  // clamp to armor-based maxHP
+            pbHP.MaxValue = maxHP;
+            pbHP.Value = hp;
+            UpdateHPBarColor();
 
             // ---- HP Scaling with Armor ----
             ApplyArmorUpgradeEffect();
@@ -304,6 +318,17 @@ namespace RocketOdyssey
                 obstacleSpawnTimer.Interval = obstacleRand.Next(4000, 8001);
             };
 
+            // === Power-up Spawner ===
+            powerupSpawnTimer = new Timer { Interval = 5000 }; // spawn every 5s on average
+            powerupSpawnTimer.Tick += (s, e) =>
+            {
+                if (controlsLocked || isGameOver || isPaused) return;
+
+                SpawnPowerup();
+                powerupSpawnTimer.Interval = powerupRand.Next(5000, 9000); // random 5–9s delay
+            };
+            powerupSpawnTimer.Start();
+
             // --- Launch countdown logic with re-entry pause system ---
 
             // Load launch countdown from DB
@@ -434,13 +459,13 @@ namespace RocketOdyssey
         {
             double ratio = (double)pbHP.Value / pbHP.MaxValue;
             if (ratio > 0.75)
-                pbHP.ForeColor = Color.LimeGreen;
+                pbHP.Foreground = Color.LimeGreen;
             else if (ratio > 0.5)
-                pbHP.ForeColor = Color.YellowGreen;
+                pbHP.Foreground = Color.YellowGreen;
             else if (ratio > 0.25)
-                pbHP.ForeColor = Color.Orange;
+                pbHP.Foreground = Color.Orange;
             else
-                pbHP.ForeColor = Color.Red;
+                pbHP.Foreground = Color.Red;
         }
 
         // Call this whenever armor upgrade changes (optional if HP can increase mid-game)
@@ -455,20 +480,25 @@ namespace RocketOdyssey
         private void ApplyArmorUpgradeEffect()
         {
             // Each armor level beyond base (100 HP) adds +25 max HP
-            // Example: 100 (base), 125 (lv1), 150 (lv2), 175 (lv3), 200 (lv4)
             int armorLevel = (maxHP - 100) / 25;
             int newMaxHP = 100 + (armorLevel * 25);
 
-            // Increase current HP by same armor bonus (no overheal past max)
-            hp = Math.Min(hp + (armorLevel * 25), newMaxHP);
+            // Preserve HP ratio relative to old max HP
+            double hpRatio = pbHP.MaxValue > 0 ? (double)hp / pbHP.MaxValue : 1.0;
+            hp = (int)(hpRatio * newMaxHP);
+
+            // Clamp to ensure HP doesn’t exceed new max
+            hp = Math.Min(hp, newMaxHP);
 
             pbHP.MaxValue = newMaxHP;
-            pbHP.Value = Math.Min(hp, pbHP.MaxValue);
+            pbHP.Value = hp;
             UpdateHPBarColor();
 
-            // Save to DB for persistence
+            // Save updated HP and maxHP to DB
             DatabaseHelper.SavePlayerHP(currentUser, hp);
+            DatabaseHelper.SaveTempUpgrades(currentUser, rocketSpeed, newMaxHP, rocketWeapon);
         }
+
 
         // ----------------------------------------
         //   BACKGROUND SCROLLING (MULTI-STAGE)
@@ -798,73 +828,165 @@ namespace RocketOdyssey
         }
 
         // ----------------------------------------
-        //   Game Over Sequence
+        //   Game Over Sequence (Updated for Power-Ups)
         // ----------------------------------------
 
         private void StartGameOverCountdown()
         {
-            // Prevent multiple triggers
+            // Prevent re-triggering
             if (isGameOver) return;
             isGameOver = true;
 
-            int countdown = 5;
-            Timer countdownTimer = new Timer();
-            countdownTimer.Interval = 1000;
-            countdownTimer.Tick += (s, ev) =>
+            // --- Disable rocket control but keep background and spawns alive ---
+            controlsLocked = true;
+
+            PictureBox explosion = null;
+
+            try
             {
-                countdown--;
-                if (countdown <= 0)
+
+                // Hide rocket so explosion appears on its place
+                PlayerRocket.Visible = false;
+
+                // --- Create explosion sprite (200x200) ---
+                explosion = new PictureBox
                 {
-                    countdownTimer.Stop();
-                    scrollTimer.Stop();
-                    obstacleSpawnTimer.Stop(); // stop obstacle spawning
+                    Image = Properties.Resources.Explosion,
+                    SizeMode = PictureBoxSizeMode.StretchImage,
+                    Size = new Size(200, 200),
+                    BackColor = Color.Transparent,
+                    Location = new Point(
+                        PlayerRocket.Left + PlayerRocket.Width / 2 - 100, // center horizontally
+                        PlayerRocket.Top + PlayerRocket.Height / 2 - 100   // center vertically
+                    )
+                };
 
+                panelBackground.Controls.Add(explosion);
+                explosion.BringToFront();
+                explosion.Refresh();
 
-                    // Stop all sounds before going back
-                    StopAllSounds();
+                // --- Play explosion sound once ---
+                string explosionSoundPath = Path.Combine(
+                    Application.StartupPath,
+                    "Images&Animations",
+                    "sfx",
+                    "Explosion_Sound.wav"
+                );
 
-                    // Reset background music timeline
-                    bgMusicTime = 0;
-                    DatabaseHelper.SaveSoundState(
-                        currentUser,
-                        bgMusicTime: 0,
-                        laserActive: false,
-                        laserTimeLeft: 0
-                    );
-
-                    MessageBox.Show("Out of fuel! Game Over.");
-
-                    DatabaseHelper.UpdateHighScore(currentUser, score);
-
-                    score = 0;
-                    hp = 100;
-                    fuel = 100;
-                    currentStageIndex = 0;
-                    currentStageOffset = 0;
-                    PlayerRocket.Location = new Point(326, 510);
-                    launchCountdown = 10;
-
-                    DatabaseHelper.SavePlayerFuel(currentUser, fuel);
-                    DatabaseHelper.SavePlayerHP(currentUser, hp);
-                    DatabaseHelper.SavePlayerState(
-                        currentUser,
-                        PlayerRocket.Location.X,
-                        PlayerRocket.Location.Y,
-                        currentStageIndex,
-                        currentStageOffset
-                    );
-                    DatabaseHelper.SaveLaunchTimer(currentUser, launchCountdown);
-                    DatabaseHelper.UpdateUpgrade(currentUser, "Score", score);
-
-                    // Return to main menu (fresh state, fresh music)
-                    MainMenuControl menu = new MainMenuControl();
-                    GameForm parentForm = (GameForm)this.FindForm();
-                    parentForm.Controls.Clear();
-                    parentForm.Controls.Add(menu);
+                if (File.Exists(explosionSoundPath))
+                {
+                    var sound = new System.Media.SoundPlayer(explosionSoundPath);
+                    sound.Play();
                 }
+
+                // --- Stop looping after the GIF plays once (approx. 1.5s–2s typical) ---
+                Timer stopGifTimer = new Timer { Interval = 2000 }; // stop after 2 seconds
+                stopGifTimer.Tick += (s2, e2) =>
+                {
+                    stopGifTimer.Stop();
+                    stopGifTimer.Dispose();
+
+                    if (explosion != null)
+                        explosion.Image = null; // removes image so it doesn't loop
+                };
+                stopGifTimer.Start();
+            }
+            catch
+            {
+                // Ignore missing resource/sound issues
+            }
+
+            // --- Wait 5 seconds for explosion animation ---
+            Timer explosionTimer = new Timer { Interval = 5000 };
+            explosionTimer.Tick += (s, ev) =>
+            {
+                explosionTimer.Stop();
+                explosionTimer.Dispose();
+
+                // --- Proceed to Game Over cleanup after explosion ---
+                StopAllSounds();
+                scrollTimer?.Stop();
+                obstacleSpawnTimer?.Stop();
+                powerupSpawnTimer?.Stop();
+                laserTimer?.Stop();
+
+                // Reset sound state
+                bgMusicTime = 0;
+                DatabaseHelper.SaveSoundState(
+                    currentUser,
+                    bgMusicTime: 0,
+                    laserActive: false,
+                    laserTimeLeft: 0
+                );
+
+                // --- Save progress before reset ---
+                DatabaseHelper.UpdateHighScore(currentUser, score);
+                DatabaseHelper.UpdatePlayerCoins(currentUser, coins);
+                DatabaseHelper.SavePlayerFuel(currentUser, fuel);
+                DatabaseHelper.SavePlayerHP(currentUser, hp);
+                DatabaseHelper.SavePlayerState(
+                    currentUser,
+                    PlayerRocket.Location.X,
+                    PlayerRocket.Location.Y,
+                    currentStageIndex,
+                    currentStageOffset
+                );
+                DatabaseHelper.SaveLaunchTimer(currentUser, launchCountdown);
+                DatabaseHelper.SaveTempUpgrades(currentUser, rocketSpeed, maxHP, rocketWeapon);
+
+                // --- Game Over Summary ---
+                string summaryMessage =
+                    $"💥 GAME OVER 💥\n\n" +
+                    $"• Score: {score}\n" +
+                    $"• Total Coins Collected: {coins}\n" +
+                    $"• Distance Reached: Stage {currentStageIndex + 1}\n\n" +
+                    $"Your progress has been saved.";
+
+                MessageBox.Show(summaryMessage, "Game Over", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                // --- Remove explosion safely ---
+                if (explosion != null)
+                {
+                    panelBackground.Controls.Remove(explosion);
+                    explosion.Dispose();
+                }
+
+                // --- Reset stats ---
+                score = 0;
+                hp = maxHP;
+                fuel = 100;
+                currentStageIndex = 0;
+                currentStageOffset = 0;
+                PlayerRocket.Location = new Point(326, 510);
+                launchCountdown = 10;
+                isGameOver = false;
+                controlsLocked = false;
+                PlayerRocket.Visible = true;
+
+                // --- Save reset state ---
+                DatabaseHelper.SavePlayerFuel(currentUser, fuel);
+                DatabaseHelper.SavePlayerHP(currentUser, hp);
+                DatabaseHelper.SavePlayerState(
+                    currentUser,
+                    PlayerRocket.Location.X,
+                    PlayerRocket.Location.Y,
+                    currentStageIndex,
+                    currentStageOffset
+                );
+                DatabaseHelper.SaveLaunchTimer(currentUser, launchCountdown);
+                DatabaseHelper.UpdateUpgrade(currentUser, "Score", score);
+
+                // --- Return to Main Menu ---
+                MainMenuControl menu = new MainMenuControl();
+                GameForm parentForm = (GameForm)this.FindForm();
+                parentForm.Controls.Clear();
+                parentForm.Controls.Add(menu);
             };
-            countdownTimer.Start();
+
+            explosionTimer.Start();
         }
+
+
 
         // ----------------------------------------
         //   Launch Timer
@@ -1801,12 +1923,32 @@ namespace RocketOdyssey
                 if (PlayerRocket != null && PixelPerfectCollision(obstacle, PlayerRocket))
                 {
                     int damage = data.Speed * 5;
-                    try { pbHP.Value = Math.Max(0, pbHP.Value - damage); } catch { }
 
-                    // Do not give any score when obstacle hits the rocket
+                    // Apply damage to HP
+                    hp = Math.Max(0, hp - damage);
+
+                    // Update HP bar safely
+                    if (pbHP != null)
+                    {
+                        pbHP.Value = Math.Max(0, hp);
+                        UpdateHPBarColor();
+                    }
+
+                    // Save current HP state immediately
+                    DatabaseHelper.SavePlayerHP(currentUser, hp);
+
+                    // If HP is zero, trigger the delayed Game Over sequence
+                    if (hp <= 0 && !isGameOver)
+                    {
+                        StartGameOverCountdown();
+                        return; // stop further processing for this tick
+                    }
+
+                    // Remove the obstacle (no score)
                     RemoveObstacle(obstacle, moveTimer, altitudeChangeTimer, destroyedByLaser: false, giveScore: false);
                     return;
                 }
+
 
 
                 // === Laser collision check (uses actual laser beam) ===
@@ -1885,7 +2027,6 @@ namespace RocketOdyssey
             altitudeTimer.Dispose();
         }
 
-
         private bool LaserCollision(PictureBox obstacle)
         {
             // Ensure laser is active and visible
@@ -1895,25 +2036,6 @@ namespace RocketOdyssey
             // Simple bounding-box check for now (fast)
             return obstacle.Bounds.IntersectsWith(laserBeam.Bounds);
         }
-
-
-        // ===================== UPDATED OBSTACLE DATA =====================
-        private class ObstacleData
-        {
-            public int Speed { get; set; }
-            public double AngleRad { get; set; }
-            public int Direction { get; set; }
-            public double LaserHitTime { get; set; } // seconds of laser contact
-
-            public ObstacleData(int speed, double angleRad, int direction)
-            {
-                Speed = speed;
-                AngleRad = angleRad;
-                Direction = direction;
-                LaserHitTime = 0;
-            }
-        }
-
 
         private bool PixelPerfectCollision(PictureBox a, PictureBox b)
         {
@@ -1990,6 +2112,233 @@ namespace RocketOdyssey
 
             return false;
         }
+
+        private class ObstacleData
+        {
+            public int Speed { get; set; }
+            public double AngleRad { get; set; }
+            public int Direction { get; set; }
+            public double LaserHitTime { get; set; } // seconds of laser contact
+
+            public ObstacleData(int speed, double angleRad, int direction)
+            {
+                Speed = speed;
+                AngleRad = angleRad;
+                Direction = direction;
+                LaserHitTime = 0;
+            }
+        }
+
+
+        // =====================================================
+        //  Power up system (with rarity and scaling)
+        // =====================================================
+
+        private void SpawnPowerup()
+        {
+            if (panelBackground == null || PlayerRocket == null) return;
+
+            // --- prevent laser battery spawn if laser is active or full ---
+            bool canSpawnLaser = !(laserActive || (pbWeapon != null && pbWeapon.Value >= pbWeapon.MaxValue));
+
+            // Weighted type probabilities
+            // Total = 100
+            // Coin (10%), Fuel (40%), Repair (40%), LaserBattery (10%)
+            string chosen;
+            int roll = powerupRand.Next(100); // 0–99
+
+            if (roll < 10)
+                chosen = "Coin";
+            else if (roll < 50)
+                chosen = "Fuel";       // 40% (10–49)
+            else if (roll < 90)
+                chosen = "Repair";     // 40% (50–89)
+            else
+                chosen = "LaserBattery"; // 10% (90–99)
+
+
+            // Avoid LaserBattery when disallowed
+            if (chosen == "LaserBattery" && !canSpawnLaser)
+            {
+                // reroll between others (weighted again)
+                int reroll = powerupRand.Next(90);
+                if (reroll < 10) chosen = "Coin";
+                else if (reroll < 85) chosen = "Fuel";
+                else chosen = "Repair";
+            }
+
+            PictureBox p = new PictureBox
+            {
+                BackColor = Color.Transparent,
+                SizeMode = PictureBoxSizeMode.StretchImage
+            };
+
+            int fallSpeed = 2;
+            PowerupData tag = null;
+
+            // --- COIN with rarity and scaling ---
+            if (chosen == "Coin")
+            {
+                // Weighted rarity for coin values
+                int coinRoll = powerupRand.Next(100);
+                int coinValue;
+                if (coinRoll < 50) coinValue = 1;      // 50%
+                else if (coinRoll < 75) coinValue = 5; // 25%
+                else if (coinRoll < 90) coinValue = 10; // 15%
+                else coinValue = 20;                    // 10%
+
+                p.Image = Properties.Resources.coin;
+                tag = new PowerupData("Coin", coinValue);
+
+                // Size and fall speed scale with value
+                if (coinValue == 1)
+                {
+                    p.Size = new Size(35, 35);
+                    fallSpeed = 2;
+                }
+                else if (coinValue == 5)
+                {
+                    p.Size = new Size(45, 45);
+                    fallSpeed = 3;
+                }
+                else if (coinValue == 10)
+                {
+                    p.Size = new Size(55, 55);
+                    fallSpeed = 4;
+                }
+                else // 20 coin
+                {
+                    p.Size = new Size(65, 65);
+                    fallSpeed = 5;
+                }
+            }
+            else if (chosen == "Fuel")
+            {
+                p.Image = Properties.Resources.Fuel;
+                p.Size = new Size(55, 55);
+                tag = new PowerupData("Fuel", 0);
+                fallSpeed = 2;
+            }
+            else if (chosen == "Repair")
+            {
+                p.Image = Properties.Resources.repair_tool;
+                p.Size = new Size(50, 50);
+                tag = new PowerupData("Repair", 0);
+                fallSpeed = 2;
+            }
+            else // LaserBattery (rare)
+            {
+                p.Image = Properties.Resources.laser_battery;
+                p.Size = new Size(50, 70);
+                tag = new PowerupData("LaserBattery", 0);
+                fallSpeed = 3;
+            }
+
+            p.Tag = tag;
+
+            // --- Spawn from random X position ---
+            int left = powerupRand.Next(30, Math.Max(100, panelBackground.Width - 80));
+            p.Left = left;
+            p.Top = -p.Height;
+
+            panelBackground.Controls.Add(p);
+            p.SendToBack();
+            activePowerups.Add(p);
+
+            // --- Animate falling ---
+            Timer fallTimer = new Timer { Interval = 20 };
+            fallTimer.Tick += (s, e) =>
+            {
+                if (controlsLocked || isPaused) return;
+                if (p == null || p.IsDisposed)
+                {
+                    fallTimer.Stop();
+                    fallTimer.Dispose();
+                    return;
+                }
+
+                p.Top += fallSpeed;
+
+                // --- Collision with player rocket ---
+                if (PixelPerfectCollision(p, PlayerRocket))
+                {
+                    if (p.Tag is PowerupData data) ApplyPowerupEffect(data);
+                    RemovePowerup(p, fallTimer);
+                    return;
+                }
+
+                // --- Off-screen cleanup ---
+                if (p.Top > panelBackground.Height)
+                {
+                    RemovePowerup(p, fallTimer);
+                    return;
+                }
+            };
+            fallTimer.Start();
+        }
+
+        private void ApplyPowerupEffect(PowerupData data)
+        {
+            if (data == null) return;
+
+            if (data.Type == "Coin")
+            {
+                coins += data.Value;
+                if (lblCoins != null) lblCoins.Content = FormatCoins(coins);
+                DatabaseHelper.UpdatePlayerCoins(currentUser, coins);
+            }
+            else if (data.Type == "Fuel")
+            {
+                fuel = 100;
+                if (pbFuel != null) pbFuel.Value = fuel;
+                DatabaseHelper.SavePlayerFuel(currentUser, fuel);
+            }
+            else if (data.Type == "Repair")
+            {
+                // ✅ Heal +25 HP, capped at armor-based maxHP
+                hp = Math.Min(hp + 25, maxHP);
+
+                if (pbHP != null)
+                {
+                    pbHP.Value = hp;
+                    UpdateHPBarColor();
+                }
+
+                DatabaseHelper.SavePlayerHP(currentUser, hp);
+            }
+            else if (data.Type == "LaserBattery")
+            {
+                if (!laserActive && pbWeapon != null && pbWeapon.Value < pbWeapon.MaxValue)
+                {
+                    pbWeapon.Value = pbWeapon.MaxValue;
+                    weaponCharged = true;
+                    laserTimeLeft = rocketWeapon * 4;
+                    DatabaseHelper.SaveSoundState(currentUser, bgReader?.CurrentTime.TotalSeconds ?? 0, false, laserTimeLeft);
+                }
+            }
+        }
+
+        private void RemovePowerup(PictureBox p, Timer fallTimer)
+        {
+            if (panelBackground.Controls.Contains(p))
+                panelBackground.Controls.Remove(p);
+            activePowerups.Remove(p);
+            try { p.Dispose(); } catch { }
+            fallTimer.Stop();
+            fallTimer.Dispose();
+        }
+
+        private class PowerupData
+        {
+            public string Type { get; private set; }
+            public int Value { get; private set; }
+            public PowerupData(string type, int value)
+            {
+                Type = type;
+                Value = value;
+            }
+        }
+
 
     }
 }

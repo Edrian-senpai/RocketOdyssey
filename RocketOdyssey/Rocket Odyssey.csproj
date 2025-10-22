@@ -264,6 +264,7 @@
     <None Include="Resources\eye_hide.bmp" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Images&amp;Animations\animation\Explosion.gif" />
     <Content Include="Images&amp;Animations\animation\laser_beam.gif" />
     <Content Include="Images&amp;Animations\animation\orb.gif" />
     <Content Include="Images&amp;Animations\Background\Atmosphere.jpg" />
@@ -304,10 +305,13 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Images&amp;Animations\sfx\bg_music_menu.wav" />
-    <Content Include="Images&amp;Animations\sfx\Explosion_Sound.wav" />
+    <Content Include="Images&amp;Animations\sfx\Explosion_Sound.wav">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Images&amp;Animations\sfx\Laser_Sound.wav">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Include="Resources\Explosion.gif" />
     <None Include="Resources\Sattelite_smol1.gif" />
     <None Include="Resources\Sattelite_smo1.gif" />
     <None Include="Resources\Boss_ship_smol.gif" />
