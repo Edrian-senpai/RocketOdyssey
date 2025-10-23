@@ -301,6 +301,9 @@
     <Content Include="Images&amp;Animations\rocket_2 animation\rocket_2_smol.gif" />
     <Content Include="Images&amp;Animations\rocket_2 animation\rocket_2_smol_down.gif" />
     <Content Include="Images&amp;Animations\rocket_2 animation\rocket_2_smol_up.gif" />
+    <Content Include="Images&amp;Animations\sfx\bg_music_game.wav" />
+    <Content Include="Images&amp;Animations\sfx\Explosion_Sound.wav" />
+    <Content Include="Images&amp;Animations\sfx\Laser_Sound.wav" />
     <None Include="Resources\Explosion.gif" />
     <None Include="Resources\Sattelite_smol1.gif" />
     <None Include="Resources\Sattelite_smo1.gif" />
