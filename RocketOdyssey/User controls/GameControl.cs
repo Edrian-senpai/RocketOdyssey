@@ -28,7 +28,6 @@ namespace RocketOdyssey
 
         // Player movement state
         private bool controlsLocked = true;
-        private bool rocketControlDisabled = false; // disables player input but keeps world moving
         private bool upPressed = false;
         private bool downPressed = false;
         private bool leftPressed = false;
@@ -959,10 +958,6 @@ namespace RocketOdyssey
             // =========================
             if (fuelDepleted)
             {
-                rocketControlDisabled = true;
-
-
-
                 int timeLeft = 5;
                 Timer fuelEndTimer = new Timer { Interval = 1000 };
                 fuelEndTimer.Tick += (s, ev) =>
@@ -977,9 +972,11 @@ namespace RocketOdyssey
 
                         // Restore all state flags
                         isGameOver = false;
-                        rocketControlDisabled = false;
                         controlsLocked = false;
                         isOutOfFuel = false; // <-- THIS fixes the main problem
+                        controlsLocked = false;
+                        isOutOfFuel = false;
+
 
                         // Restart movement
                         if (!moveTimer.Enabled)

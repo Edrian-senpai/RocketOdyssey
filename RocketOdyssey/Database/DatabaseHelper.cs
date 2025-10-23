@@ -262,6 +262,7 @@ namespace RocketOdyssey.Database
                     // --- Reset player position, fuel, HP (based on armor), and launch timer ---
                     string resetUserQuery = @"
                 UPDATE Users SET 
+                    Score = 0,
                     RocketPosX = 326, 
                     RocketPosY = 510,
                     BackgroundStage = 0,
