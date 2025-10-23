@@ -297,6 +297,36 @@ namespace RocketOdyssey.Database
             }
         }
 
+        public static void UpdatePlayerScore(string username, int score)
+        {
+            using (var conn = GetConnection())
+            {
+                conn.Open();
+                string query = @"UPDATE Users SET Score = @score WHERE Username = @username";
+                using (var cmd = new SQLiteCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@score", score);
+                    cmd.Parameters.AddWithValue("@username", username);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        public static int LoadPlayerScore(string username)
+        {
+            using (var conn = GetConnection())
+            {
+                conn.Open();
+                string query = @"SELECT Score FROM Users WHERE Username = @username";
+                using (var cmd = new SQLiteCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@username", username);
+                    object result = cmd.ExecuteScalar();
+                    return result != null ? Convert.ToInt32(result) : 0;
+                }
+            }
+        }
+
 
         public static int GetHighScore(string username)
         {
