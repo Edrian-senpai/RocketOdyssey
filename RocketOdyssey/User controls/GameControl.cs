@@ -57,6 +57,7 @@ namespace RocketOdyssey
         private string currentUser;
         private int score = 0;
         private int coins = 0;
+        private int sessionCoins = 0; // coins earned this game session only
         private int hp = 100;
         private int maxHP = 100;
         private int fuel = 100;
@@ -938,7 +939,7 @@ namespace RocketOdyssey
                 string summaryMessage =
                     $"💥 GAME OVER 💥\n\n" +
                     $"• Score: {score}\n" +
-                    $"• Total Coins Collected: {coins}\n" +
+                    $"• Coins Collected This Run: {sessionCoins}\n" +
                     $"• Distance Reached: Stage {currentStageIndex + 1}\n\n" +
                     $"Your progress has been saved.";
 
@@ -955,6 +956,7 @@ namespace RocketOdyssey
                 score = 0;
                 hp = maxHP;
                 fuel = 100;
+                sessionCoins = 0;
                 currentStageIndex = 0;
                 currentStageOffset = 0;
                 PlayerRocket.Location = new Point(326, 510);
@@ -2284,6 +2286,7 @@ namespace RocketOdyssey
             if (data.Type == "Coin")
             {
                 coins += data.Value;
+                sessionCoins += data.Value;   // this run only
                 if (lblCoins != null) lblCoins.Content = FormatCoins(coins);
                 DatabaseHelper.UpdatePlayerCoins(currentUser, coins);
             }
