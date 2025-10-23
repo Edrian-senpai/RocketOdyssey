@@ -28,6 +28,7 @@ namespace RocketOdyssey
 
         // Player movement state
         private bool controlsLocked = true;
+        private bool rocketControlDisabled = false; // disables player input but keeps world moving
         private bool upPressed = false;
         private bool downPressed = false;
         private bool leftPressed = false;
@@ -55,7 +56,7 @@ namespace RocketOdyssey
 
         // Player data
         private string currentUser;
-        private int score = 0;
+        private int score;
         private int coins = 0;
         private int sessionCoins = 0; // coins earned this game session only
         private int hp = 100;
@@ -126,7 +127,7 @@ namespace RocketOdyssey
                 AutoSize = true,
                 Visible = false
             };
-           
+
             panelBackground.Controls.Add(lblLaunchCountdown);
             lblLaunchCountdown.BringToFront();
             lblLaunchCountdown.Location = new Point(
@@ -174,6 +175,7 @@ namespace RocketOdyssey
             }
 
             // ---- Load coins and other state ----
+            score = DatabaseHelper.LoadPlayerScore(currentUser);
             coins = DatabaseHelper.GetPlayerCoins(currentUser);
             hp = DatabaseHelper.LoadPlayerHP(currentUser);
             fuel = DatabaseHelper.LoadPlayerFuel(currentUser);
@@ -834,161 +836,203 @@ namespace RocketOdyssey
 
         private void StartGameOverCountdown()
         {
-            // Prevent re-triggering
+
             if (isGameOver) return;
+
+            bool hpDepleted = (hp <= 0);
+            bool fuelDepleted = (fuel <= 0);
+
+            if (!hpDepleted && !fuelDepleted) return;
+
             isGameOver = true;
 
-            // --- Disable rocket control but keep background and spawns alive ---
-            controlsLocked = true;
-
-            PictureBox explosion = null;
-
-            try
+            // =========================
+            // 💥 HP = 0 (Instant Game Over)
+            // =========================
+            if (hpDepleted)
             {
+                controlsLocked = true; // freeze all controls
 
-                // Hide rocket so explosion appears on its place
-                PlayerRocket.Visible = false;
+                PictureBox explosion = null;
 
-                // --- Create explosion sprite (200x200) ---
-                explosion = new PictureBox
+                try
                 {
-                    Image = Properties.Resources.Explosion,
-                    SizeMode = PictureBoxSizeMode.StretchImage,
-                    Size = new Size(200, 200),
-                    BackColor = Color.Transparent,
-                    Location = new Point(
-                        PlayerRocket.Left + PlayerRocket.Width / 2 - 100, // center horizontally
-                        PlayerRocket.Top + PlayerRocket.Height / 2 - 100   // center vertically
-                    )
-                };
+                    PlayerRocket.Visible = false;
 
-                panelBackground.Controls.Add(explosion);
-                explosion.BringToFront();
-                explosion.Refresh();
+                    // Create explosion sprite (200x200)
+                    explosion = new PictureBox
+                    {
+                        Image = Properties.Resources.Explosion,
+                        SizeMode = PictureBoxSizeMode.StretchImage,
+                        Size = new Size(200, 200),
+                        BackColor = Color.Transparent,
+                        Location = new Point(
+                            PlayerRocket.Left + PlayerRocket.Width / 2 - 100,
+                            PlayerRocket.Top + PlayerRocket.Height / 2 - 100
+                        )
+                    };
 
-                // --- Play explosion sound once ---
-                string explosionSoundPath = Path.Combine(
-                    Application.StartupPath,
-                    "Images&Animations",
-                    "sfx",
-                    "Explosion_Sound.wav"
-                );
+                    panelBackground.Controls.Add(explosion);
+                    explosion.BringToFront();
+                    explosion.Refresh();
 
-                if (File.Exists(explosionSoundPath))
-                {
-                    var sound = new System.Media.SoundPlayer(explosionSoundPath);
-                    sound.Play();
+                    // --- Play explosion sound ---
+                    string explosionSoundPath = Path.Combine(
+                        Application.StartupPath, "Images&Animations", "sfx", "Explosion_Sound.wav"
+                    );
+                    if (File.Exists(explosionSoundPath))
+                        new System.Media.SoundPlayer(explosionSoundPath).Play();
+
+                    // Stop GIF loop after ~2 seconds
+                    Timer stopGifTimer = new Timer { Interval = 2000 };
+                    stopGifTimer.Tick += (s2, e2) =>
+                    {
+                        stopGifTimer.Stop();
+                        stopGifTimer.Dispose();
+                        if (explosion != null) explosion.Image = null;
+                    };
+                    stopGifTimer.Start();
                 }
+                catch { }
 
-                // --- Stop looping after the GIF plays once (approx. 1.5s–2s typical) ---
-                Timer stopGifTimer = new Timer { Interval = 2000 }; // stop after 2 seconds
-                stopGifTimer.Tick += (s2, e2) =>
+                // --- Short delay for explosion visual (2.5 sec) ---
+                Timer explosionEndTimer = new Timer { Interval = 2500 };
+                explosionEndTimer.Tick += (s, e) =>
                 {
-                    stopGifTimer.Stop();
-                    stopGifTimer.Dispose();
+                    explosionEndTimer.Stop();
+                    explosionEndTimer.Dispose();
 
+                    // Clean up explosion
                     if (explosion != null)
-                        explosion.Image = null; // removes image so it doesn't loop
+                    {
+                        panelBackground.Controls.Remove(explosion);
+                        explosion.Dispose();
+                    }
+
+                    // Stop everything
+                    StopAllSounds();
+                    scrollTimer?.Stop();
+                    fuelTimer?.Stop();
+                    obstacleSpawnTimer?.Stop();
+                    powerupSpawnTimer?.Stop();
+                    laserTimer?.Stop();
+
+                    // Reset sound state
+                    bgMusicTime = 0;
+                    DatabaseHelper.SaveSoundState(currentUser, 0, false, 0);
+
+                    // Save final progress
+                    DatabaseHelper.UpdateHighScore(currentUser, score);
+                    DatabaseHelper.UpdatePlayerCoins(currentUser, coins);
+                    DatabaseHelper.SavePlayerFuel(currentUser, fuel);
+                    DatabaseHelper.SavePlayerHP(currentUser, hp);
+                    DatabaseHelper.SavePlayerState(currentUser,
+                        PlayerRocket.Location.X, PlayerRocket.Location.Y, currentStageIndex, currentStageOffset);
+                    DatabaseHelper.SaveLaunchTimer(currentUser, launchCountdown);
+                    DatabaseHelper.SaveTempUpgrades(currentUser, rocketSpeed, maxHP, rocketWeapon);
+
+                    string summaryMessage =
+                        $"💥 GAME OVER 💥\n\n" +
+                        $"• Score: {score}\n" +
+                        $"• Coins Collected This Run: {sessionCoins}\n" +
+                        $"• Distance Reached: Stage {currentStageIndex + 1}\n\n" +
+                        $"Your progress has been saved.";
+
+                    MessageBox.Show(summaryMessage, "Game Over", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                    // Reset player
+                    DatabaseHelper.ResetPlayerProgress(currentUser);
+
+
+                    // Return to Main Menu
+                    MainMenuControl menu = new MainMenuControl();
+                    GameForm parentForm = (GameForm)this.FindForm();
+                    parentForm.Controls.Clear();
+                    parentForm.Controls.Add(menu);
                 };
-                stopGifTimer.Start();
-            }
-            catch
-            {
-                // Ignore missing resource/sound issues
+                explosionEndTimer.Start();
+                return; // stop here, explosion handles its own flow
             }
 
-            // --- Wait 5 seconds for explosion animation ---
-            Timer explosionTimer = new Timer { Interval = 5000 };
-            explosionTimer.Tick += (s, ev) =>
+            // =========================
+            // ⛽ FUEL = 0 (5-sec grace)
+            // =========================
+            if (fuelDepleted)
             {
-                explosionTimer.Stop();
-                explosionTimer.Dispose();
+                rocketControlDisabled = true;
 
-                // --- Proceed to Game Over cleanup after explosion ---
-                StopAllSounds();
-                scrollTimer?.Stop();
-                obstacleSpawnTimer?.Stop();
-                powerupSpawnTimer?.Stop();
-                laserTimer?.Stop();
 
-                // Reset sound state
-                bgMusicTime = 0;
-                DatabaseHelper.SaveSoundState(
-                    currentUser,
-                    bgMusicTime: 0,
-                    laserActive: false,
-                    laserTimeLeft: 0
-                );
 
-                // --- Save progress before reset ---
-                DatabaseHelper.UpdateHighScore(currentUser, score);
-                DatabaseHelper.UpdatePlayerCoins(currentUser, coins);
-                DatabaseHelper.SavePlayerFuel(currentUser, fuel);
-                DatabaseHelper.SavePlayerHP(currentUser, hp);
-                DatabaseHelper.SavePlayerState(
-                    currentUser,
-                    PlayerRocket.Location.X,
-                    PlayerRocket.Location.Y,
-                    currentStageIndex,
-                    currentStageOffset
-                );
-                DatabaseHelper.SaveLaunchTimer(currentUser, launchCountdown);
-                DatabaseHelper.SaveTempUpgrades(currentUser, rocketSpeed, maxHP, rocketWeapon);
-
-                // --- Game Over Summary ---
-                string summaryMessage =
-                    $"💥 GAME OVER 💥\n\n" +
-                    $"• Score: {score}\n" +
-                    $"• Coins Collected This Run: {sessionCoins}\n" +
-                    $"• Distance Reached: Stage {currentStageIndex + 1}\n\n" +
-                    $"Your progress has been saved.";
-
-                MessageBox.Show(summaryMessage, "Game Over", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                // --- Remove explosion safely ---
-                if (explosion != null)
+                int timeLeft = 5;
+                Timer fuelEndTimer = new Timer { Interval = 1000 };
+                fuelEndTimer.Tick += (s, ev) =>
                 {
-                    panelBackground.Controls.Remove(explosion);
-                    explosion.Dispose();
-                }
+                    timeLeft--;
 
-                // --- Reset stats ---
-                score = 0;
-                hp = maxHP;
-                fuel = 100;
-                sessionCoins = 0;
-                currentStageIndex = 0;
-                currentStageOffset = 0;
-                PlayerRocket.Location = new Point(326, 510);
-                launchCountdown = 10;
-                isGameOver = false;
-                controlsLocked = false;
-                PlayerRocket.Visible = true;
+                    // Cancel Game Over if refueled
+                    if (fuel > 0)
+                    {
+                        fuelEndTimer.Stop();
+                        fuelEndTimer.Dispose();
 
-                // --- Save reset state ---
-                DatabaseHelper.SavePlayerFuel(currentUser, fuel);
-                DatabaseHelper.SavePlayerHP(currentUser, hp);
-                DatabaseHelper.SavePlayerState(
-                    currentUser,
-                    PlayerRocket.Location.X,
-                    PlayerRocket.Location.Y,
-                    currentStageIndex,
-                    currentStageOffset
-                );
-                DatabaseHelper.SaveLaunchTimer(currentUser, launchCountdown);
-                DatabaseHelper.UpdateUpgrade(currentUser, "Score", score);
+                        // Restore all state flags
+                        isGameOver = false;
+                        rocketControlDisabled = false;
+                        controlsLocked = false;
+                        isOutOfFuel = false; // <-- THIS fixes the main problem
 
-                // --- Return to Main Menu ---
-                MainMenuControl menu = new MainMenuControl();
-                GameForm parentForm = (GameForm)this.FindForm();
-                parentForm.Controls.Clear();
-                parentForm.Controls.Add(menu);
-            };
+                        // Restart movement
+                        if (!moveTimer.Enabled)
+                            moveTimer.Start();
 
-            explosionTimer.Start();
+                        return;
+                    }
+
+                    if (timeLeft <= 0)
+                    {
+                        fuelEndTimer.Stop();
+                        fuelEndTimer.Dispose();
+
+                        // --- Proceed to Game Over ---
+                        StopAllSounds();
+                        scrollTimer?.Stop();
+                        obstacleSpawnTimer?.Stop();
+                        powerupSpawnTimer?.Stop();
+                        laserTimer?.Stop();
+
+                        bgMusicTime = 0;
+                        DatabaseHelper.SaveSoundState(currentUser, 0, false, 0);
+
+                        DatabaseHelper.UpdateHighScore(currentUser, score);
+                        DatabaseHelper.UpdatePlayerCoins(currentUser, coins);
+                        DatabaseHelper.SavePlayerFuel(currentUser, fuel);
+                        DatabaseHelper.SavePlayerHP(currentUser, hp);
+                        DatabaseHelper.SavePlayerState(currentUser,
+                            PlayerRocket.Location.X, PlayerRocket.Location.Y, currentStageIndex, currentStageOffset);
+                        DatabaseHelper.SaveLaunchTimer(currentUser, launchCountdown);
+                        DatabaseHelper.SaveTempUpgrades(currentUser, rocketSpeed, maxHP, rocketWeapon);
+
+                        string summaryMessage =
+                            $"💥 GAME OVER 💥\n\n" +
+                            $"• Score: {score}\n" +
+                            $"• Coins Collected This Run: {sessionCoins}\n" +
+                            $"• Distance Reached: Stage {currentStageIndex + 1}\n\n" +
+                            $"Your progress has been saved.";
+
+                        MessageBox.Show(summaryMessage, "Game Over", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                        // Reset player state
+                        DatabaseHelper.ResetPlayerProgress(currentUser);
+
+                        MainMenuControl menu = new MainMenuControl();
+                        GameForm parentForm = (GameForm)this.FindForm();
+                        parentForm.Controls.Clear();
+                        parentForm.Controls.Add(menu);
+                    }
+                };
+                fuelEndTimer.Start();
+            }
         }
-
-
 
         // ----------------------------------------
         //   Launch Timer
@@ -1029,8 +1073,9 @@ namespace RocketOdyssey
             DatabaseHelper.SaveTempUpgrades(currentUser, rocketSpeed, maxHP, rocketWeapon);
 
             // Coins and scores are permanent
-            DatabaseHelper.UpdatePlayerCoins(currentUser, coins);
+            DatabaseHelper.UpdatePlayerScore(currentUser, score);
             DatabaseHelper.UpdateHighScore(currentUser, score);
+            DatabaseHelper.UpdatePlayerCoins(currentUser, coins);
         }
 
         // ----------------------------------------
