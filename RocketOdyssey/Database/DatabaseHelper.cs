@@ -327,7 +327,6 @@ namespace RocketOdyssey.Database
             }
         }
 
-
         public static int GetHighScore(string username)
         {
             using (var conn = GetConnection())
